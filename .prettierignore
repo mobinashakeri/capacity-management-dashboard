@@ -1,0 +1,9 @@
+.nuxt
+.output
+.nitro
+.cache
+dist
+coverage
+node_modules
+package-lock.json
+tests/fixtures/*.json
