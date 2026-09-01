@@ -6,7 +6,7 @@ const props = defineProps<{ centre: CentreSummary; labels: LabelLookup }>()
 
 const showUnassigned = ref(false)
 
-/** A centre is only "healthy" if no room inside it is over - the average can hide that. */
+/** A centre is only healthy if no room inside it is over — the average hides that. */
 const tone = computed(() =>
   props.centre.roomsOverCapacity > 0
     ? 'over'
@@ -17,84 +17,93 @@ const tone = computed(() =>
 </script>
 
 <template>
-  <article class="rounded-lg border border-line bg-card p-4">
-    <header class="flex items-start justify-between gap-2">
-      <div>
-        <h3 class="font-semibold">{{ centre.centre.name }}</h3>
-        <p class="text-xs text-ink-muted">
-          {{ pluralise(centre.classrooms.length, 'classroom') }}
-        </p>
+  <article class="card flex flex-col p-4">
+    <header class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <h3 class="leading-tight font-semibold">{{ centre.centre.name }}</h3>
+        <p class="text-xs text-ink-2">{{ pluralise(centre.classrooms.length, 'room') }}</p>
       </div>
-      <span class="text-right">
-        <span class="block text-xl font-semibold tabular-nums">
+      <p class="shrink-0 text-right">
+        <span class="num block text-xl leading-none font-semibold">
           {{ formatPercent(centre.utilizationPct) }}
         </span>
-        <span class="text-xs text-ink-muted">utilized</span>
-      </span>
+        <span class="eyebrow">full</span>
+      </p>
     </header>
 
     <UiCapacityBar
-      class="mt-3"
+      class="mt-3.5"
       :places-used="centre.placesUsed"
       :capacity="centre.capacity"
       :status="tone"
     />
 
-    <dl class="mt-3 grid grid-cols-3 gap-2 text-sm">
-      <div>
-        <dt class="text-xs text-ink-muted">Used</dt>
-        <dd class="tabular-nums">{{ centre.placesUsed }}</dd>
+    <dl class="num mt-3 flex items-baseline gap-4 text-sm">
+      <div class="flex items-baseline gap-1.5">
+        <dt class="eyebrow">Used</dt>
+        <dd>{{ centre.placesUsed }}</dd>
       </div>
-      <div>
-        <dt class="text-xs text-ink-muted">Available</dt>
-        <dd class="tabular-nums">{{ centre.placesAvailable }}</dd>
+      <div class="flex items-baseline gap-1.5">
+        <dt class="eyebrow">Free</dt>
+        <dd>{{ centre.placesAvailable }}</dd>
       </div>
-      <div>
-        <dt class="text-xs text-ink-muted">Capacity</dt>
-        <dd class="tabular-nums">{{ centre.capacity }}</dd>
+      <div class="flex items-baseline gap-1.5">
+        <dt class="eyebrow">Cap</dt>
+        <dd>{{ centre.capacity }}</dd>
       </div>
     </dl>
 
     <div class="mt-3 flex flex-wrap gap-1.5">
       <UiStatusBadge
         v-if="centre.roomsOverCapacity"
-        tone="critical"
-        :label="`${centre.roomsOverCapacity} over capacity`"
-      />
-      <UiStatusBadge
-        v-if="centre.ageMismatchCount"
-        tone="warning"
-        :label="`${centre.ageMismatchCount} outside age range`"
+        tone="over"
+        :count="centre.roomsOverCapacity"
+        label="over capacity"
       />
       <UiStatusBadge
         v-if="centre.unassigned.length"
-        tone="warning"
-        :label="`${centre.unassigned.length} unassigned`"
+        tone="unassigned"
+        :count="centre.unassigned.length"
+        label="no classroom"
+      />
+      <UiStatusBadge
+        v-if="centre.ageMismatchCount"
+        tone="warn"
+        :count="centre.ageMismatchCount"
+        label="outside range"
       />
       <UiStatusBadge
         v-if="!centre.roomsOverCapacity && !centre.ageMismatchCount && !centre.unassigned.length"
         tone="ok"
-        label="No exceptions"
+        label="Nothing flagged"
       />
     </div>
 
     <!--
       Unassigned children belong to the centre, not to any room, so they are
-      listed here rather than in the classroom table.
+      listed here rather than in the room table.
     -->
-    <div v-if="centre.unassigned.length" class="mt-3 border-t border-line pt-3">
+    <div v-if="centre.unassigned.length" class="mt-auto border-t border-rule pt-3">
       <button
-        class="text-sm text-ink-muted underline underline-offset-2"
+        class="text-xs text-accent underline underline-offset-2"
         :aria-expanded="showUnassigned"
+        :aria-controls="`unassigned-${centre.centre.id}`"
         @click="showUnassigned = !showUnassigned"
       >
-        {{ showUnassigned ? 'Hide' : 'Show' }} unassigned children
+        {{ showUnassigned ? 'Hide' : 'Show' }} children without a classroom
       </button>
-      <ul v-if="showUnassigned" class="mt-2 space-y-1 text-sm">
-        <li v-for="occupant in centre.unassigned" :key="occupant.enrolmentId">
-          {{ childName(occupant.child) }}
-          <span class="text-xs text-ink-muted">
-            · {{ labels.ageGroups[occupant.ageGroup] ?? occupant.ageGroup }}
+      <ul
+        v-show="showUnassigned"
+        :id="`unassigned-${centre.centre.id}`"
+        class="mt-2 space-y-1 text-sm"
+      >
+        <li v-for="occupant in centre.unassigned" :key="occupant.enrolmentId" class="flex gap-2">
+          <span class="mt-1.5 size-1.5 shrink-0 rounded-full bg-unassigned" aria-hidden="true" />
+          <span>
+            {{ childName(occupant.child) }}
+            <span class="text-xs text-ink-2">
+              · {{ labels.ageGroups[occupant.ageGroup] ?? occupant.ageGroup }}
+            </span>
           </span>
         </li>
       </ul>

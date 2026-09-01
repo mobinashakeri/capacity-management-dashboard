@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import type { ClassroomSummary, LabelLookup } from '~/types/domain'
-import {
-  ageGroupLabel,
-  capacityDescription,
-  formatPercent,
-  pluralise,
-} from '~/utils/capacity/format'
+import { ageGroupLabel, formatPercent, pluralise } from '~/utils/capacity/format'
 
 const props = defineProps<{ classrooms: ClassroomSummary[]; labels: LabelLookup }>()
 
@@ -32,10 +27,10 @@ function toggle(id: string) {
 }
 
 const STATUS_TONE = {
-  over: 'critical',
-  full: 'warning',
+  over: 'over',
+  full: 'warn',
   healthy: 'ok',
-  empty: 'neutral',
+  empty: 'idle',
 } as const
 
 const STATUS_LABEL = {
@@ -53,106 +48,131 @@ function acceptedGroups(room: ClassroomSummary): string {
 </script>
 
 <template>
-  <section aria-labelledby="classrooms-heading" class="rounded-lg border border-line bg-card">
-    <header
-      class="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3"
-    >
-      <h2 id="classrooms-heading" class="text-base font-semibold">Classrooms</h2>
+  <section aria-labelledby="classrooms-heading" class="card overflow-hidden">
+    <header class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3.5 sm:px-5">
+      <h2 id="classrooms-heading" class="text-base font-semibold">Rooms</h2>
 
-      <label class="text-sm">
-        <span class="mr-2 text-ink-muted">Centre</span>
-        <select
-          v-model="centreFilter"
-          class="rounded-md border border-line-strong bg-card px-2 py-1"
-        >
-          <option value="all">All centres</option>
-          <option v-for="centre in centres" :key="centre.id" :value="centre.id">
-            {{ centre.name }}
-          </option>
-        </select>
-      </label>
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <!-- One legend for the whole table, so rows stay uncluttered. -->
+        <ul class="hidden items-center gap-3 text-xs text-ink-2 lg:flex" aria-hidden="true">
+          <li class="flex items-center gap-1.5">
+            <span class="h-3.5 w-2 rounded-xs bg-ok" />taken
+          </li>
+          <li class="flex items-center gap-1.5">
+            <span
+              class="h-3.5 w-2 rounded-xs [background:linear-gradient(135deg,var(--color-ok)_0_48%,var(--color-ok-tint)_48%_52%,var(--color-ok)_52%_100%)]"
+            />shared
+          </li>
+          <li class="flex items-center gap-1.5">
+            <span class="h-3.5 w-2 rounded-xs border border-rule bg-surface" />free
+          </li>
+          <li class="flex items-center gap-1.5">
+            <span class="h-3.5 w-2 rounded-xs bg-over" />over
+          </li>
+        </ul>
+
+        <label class="flex items-center gap-2 text-sm">
+          <span class="eyebrow">Centre</span>
+          <select
+            v-model="centreFilter"
+            class="rounded border border-rule-strong bg-surface px-2 py-1 text-sm"
+          >
+            <option value="all">All centres</option>
+            <option v-for="centre in centres" :key="centre.id" :value="centre.id">
+              {{ centre.name }}
+            </option>
+          </select>
+        </label>
+      </div>
     </header>
 
     <!--
-      Desktop: a real table, so the data keeps its row/column relationships for
-      assistive tech and can be scanned column-wise.
+      Desktop: a real table, so rows and columns keep their relationships for
+      assistive tech and the eye can scan a single column down the page.
     -->
-    <div class="hidden overflow-x-auto md:block">
+    <div class="hidden overflow-x-auto border-t border-rule lg:block">
       <table class="w-full text-sm">
         <caption class="sr-only">
-          Classroom capacity and utilization,
+          Room capacity and occupancy,
           {{
             rows.length
           }}
           rooms
         </caption>
-        <thead class="border-b border-line text-left text-xs text-ink-muted">
-          <tr>
-            <th scope="col" class="px-4 py-2 font-medium">Classroom</th>
-            <th scope="col" class="px-4 py-2 font-medium">Age groups</th>
-            <th scope="col" class="px-4 py-2 text-right font-medium">Capacity</th>
-            <th scope="col" class="px-4 py-2 text-right font-medium">Used</th>
-            <th scope="col" class="px-4 py-2 text-right font-medium">Available</th>
-            <th scope="col" class="px-4 py-2 font-medium">Utilization</th>
-            <th scope="col" class="px-4 py-2 font-medium">Status</th>
-            <th scope="col" class="px-4 py-2"><span class="sr-only">Children</span></th>
+        <thead class="bg-ground/60 text-left">
+          <tr class="border-b border-rule">
+            <th scope="col" class="eyebrow px-4 py-2.5 sm:px-5">Room</th>
+            <th scope="col" class="eyebrow px-2 py-2.5">Takes</th>
+            <th scope="col" class="eyebrow px-2 py-2.5">Places</th>
+            <th scope="col" class="eyebrow px-2 py-2.5 text-right">Cap</th>
+            <th scope="col" class="eyebrow px-2 py-2.5 text-right">Used</th>
+            <th scope="col" class="eyebrow px-2 py-2.5 text-right">Free</th>
+            <th scope="col" class="eyebrow px-2 py-2.5">Status</th>
+            <th scope="col" class="px-4 py-2.5 sm:px-5"><span class="sr-only">Children</span></th>
           </tr>
         </thead>
 
-        <tbody class="divide-y divide-line">
+        <tbody>
           <template v-for="room in rows" :key="room.classroom.id">
-            <tr :class="room.status === 'over' && 'bg-status-over-bg/40'">
-              <th scope="row" class="px-4 py-2.5 text-left font-medium">
-                {{ room.classroom.name }}
-                <span class="block text-xs font-normal text-ink-muted">{{ room.centre.name }}</span>
+            <tr
+              class="border-b border-rule align-middle"
+              :class="room.status === 'over' && 'bg-over-tint/60'"
+            >
+              <th scope="row" class="px-4 py-3 text-left font-normal sm:px-5">
+                <span class="num block text-[15px] leading-tight font-semibold">
+                  {{ room.classroom.name }}
+                </span>
+                <span class="block text-xs text-ink-2">{{ room.centre.name }}</span>
               </th>
-              <td class="px-4 py-2.5 text-ink-muted">{{ acceptedGroups(room) }}</td>
-              <td class="px-4 py-2.5 text-right tabular-nums">{{ room.capacity }}</td>
-              <td class="px-4 py-2.5 text-right tabular-nums">
+
+              <td class="max-w-44 px-2 py-3 text-xs text-ink-2">{{ acceptedGroups(room) }}</td>
+
+              <td class="px-2 py-3">
+                <div class="max-w-44">
+                  <UiPlaceGrid compact :usage="room.usage" :capacity="room.capacity" />
+                </div>
+              </td>
+
+              <td class="num px-2 py-3 text-right text-ink-2">{{ room.capacity }}</td>
+
+              <td class="num px-2 py-3 text-right">
                 {{ room.usage.placesUsed }}
                 <span
                   v-if="room.usage.headcount !== room.usage.placesUsed"
-                  class="text-xs text-ink-muted"
+                  class="text-xs text-ink-2"
                   :title="`${room.usage.headcount} children sharing ${room.usage.placesUsed} places`"
                 >
                   ({{ room.usage.headcount }})
                 </span>
               </td>
-              <td class="px-4 py-2.5 text-right tabular-nums">
-                <span v-if="room.overBy" class="font-medium text-status-over-text">
-                  +{{ room.overBy }} over
+
+              <td class="num px-2 py-3 text-right">
+                <span v-if="room.overBy > 0" class="font-semibold text-over-text">
+                  +{{ room.overBy }}
                 </span>
-                <span v-else>{{ room.placesAvailable }}</span>
+                <span v-else :class="room.placesAvailable === 0 && 'text-ink-2'">
+                  {{ room.placesAvailable }}
+                </span>
               </td>
-              <td class="w-40 px-4 py-2.5">
-                <div class="flex items-center gap-2">
-                  <UiCapacityBar
-                    compact
-                    :places-used="room.usage.placesUsed"
-                    :capacity="room.capacity"
-                    :status="room.status"
-                  />
-                  <span class="w-12 shrink-0 text-right text-xs tabular-nums text-ink-muted">
-                    {{ formatPercent(room.utilizationPct) }}
-                  </span>
-                </div>
-              </td>
-              <td class="px-4 py-2.5">
-                <div class="flex flex-wrap gap-1">
+
+              <td class="px-2 py-3">
+                <div class="flex flex-col items-start gap-1">
                   <UiStatusBadge
                     :tone="STATUS_TONE[room.status]"
                     :label="STATUS_LABEL[room.status]"
                   />
                   <UiStatusBadge
                     v-if="room.ageMismatchCount"
-                    tone="warning"
-                    :label="`${room.ageMismatchCount} age`"
+                    tone="warn"
+                    :count="room.ageMismatchCount"
+                    label="outside range"
                   />
                 </div>
               </td>
-              <td class="px-4 py-2.5 text-right">
+
+              <td class="px-4 py-3 text-right sm:px-5">
                 <button
-                  class="rounded-md border border-line-strong px-2 py-1 text-xs whitespace-nowrap hover:bg-page"
+                  class="rounded border border-rule-strong px-2 py-1 text-xs whitespace-nowrap hover:bg-ground"
                   :aria-expanded="expanded.has(room.classroom.id)"
                   :aria-controls="`occupants-${room.classroom.id}`"
                   @click="toggle(room.classroom.id)"
@@ -167,8 +187,12 @@ function acceptedGroups(room: ClassroomSummary): string {
               Kept in the DOM and hidden rather than removed, so the aria-controls
               on the toggle always points at an element that exists.
             -->
-            <tr v-show="expanded.has(room.classroom.id)">
-              <td :id="`occupants-${room.classroom.id}`" colspan="8" class="bg-page px-4 py-3">
+            <tr v-show="expanded.has(room.classroom.id)" class="border-b border-rule">
+              <td
+                :id="`occupants-${room.classroom.id}`"
+                colspan="8"
+                class="bg-ground/60 px-4 py-3 sm:px-5"
+              >
                 <DashboardOccupantList :occupants="room.occupants" :labels="labels" />
               </td>
             </tr>
@@ -178,52 +202,68 @@ function acceptedGroups(room: ClassroomSummary): string {
     </div>
 
     <!--
-      Mobile: a list of cards rather than a horizontally scrolling table. An
-      operator on a phone should never have to pan sideways to find the flag
-      telling them a room is over capacity.
+      Below md: a list of cards. An operator holding a phone in a corridor should
+      never pan sideways to find the flag saying a room is over its limit.
     -->
-    <ul class="divide-y divide-line md:hidden">
-      <li v-for="room in rows" :key="room.classroom.id" class="px-4 py-3">
-        <div class="flex items-start justify-between gap-3">
-          <div>
-            <p class="font-medium">{{ room.classroom.name }}</p>
-            <p class="text-xs text-ink-muted">{{ room.centre.name }}</p>
+    <ul class="border-t border-rule lg:hidden">
+      <li
+        v-for="room in rows"
+        :key="room.classroom.id"
+        class="border-b border-rule last:border-b-0"
+      >
+        <div class="px-4 py-3.5" :class="room.status === 'over' && 'bg-over-tint/60'">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="num text-base leading-tight font-semibold">{{ room.classroom.name }}</p>
+              <p class="text-xs text-ink-2">{{ room.centre.name }}</p>
+            </div>
+            <UiStatusBadge :tone="STATUS_TONE[room.status]" :label="STATUS_LABEL[room.status]" />
           </div>
-          <UiStatusBadge :tone="STATUS_TONE[room.status]" :label="STATUS_LABEL[room.status]" />
+
+          <div class="mt-3">
+            <UiPlaceGrid :usage="room.usage" :capacity="room.capacity" />
+          </div>
+
+          <dl class="num mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+            <div class="flex gap-1.5">
+              <dt class="text-xs text-ink-2 not-italic">Cap</dt>
+              <dd>{{ room.capacity }}</dd>
+            </div>
+            <div class="flex gap-1.5">
+              <dt class="text-xs text-ink-2">Used</dt>
+              <dd>{{ room.usage.placesUsed }}</dd>
+            </div>
+            <div class="flex gap-1.5">
+              <dt class="text-xs text-ink-2">{{ room.overBy > 0 ? 'Over' : 'Free' }}</dt>
+              <dd :class="room.overBy > 0 && 'font-semibold text-over-text'">
+                {{ room.overBy > 0 ? `+${room.overBy}` : room.placesAvailable }}
+              </dd>
+            </div>
+            <div class="flex gap-1.5">
+              <dt class="text-xs text-ink-2">Full</dt>
+              <dd>{{ formatPercent(room.utilizationPct) }}</dd>
+            </div>
+          </dl>
+
+          <div v-if="room.ageMismatchCount" class="mt-2">
+            <UiStatusBadge tone="warn" :count="room.ageMismatchCount" label="outside age range" />
+          </div>
+
+          <button
+            class="mt-3 rounded border border-rule-strong px-2.5 py-1.5 text-xs"
+            :aria-expanded="expanded.has(room.classroom.id)"
+            :aria-controls="`occupants-m-${room.classroom.id}`"
+            @click="toggle(room.classroom.id)"
+          >
+            {{ expanded.has(room.classroom.id) ? 'Hide' : 'Show' }}
+            {{ pluralise(room.usage.headcount, 'child', 'children') }}
+          </button>
         </div>
-
-        <div class="mt-2 flex items-center gap-2">
-          <UiCapacityBar
-            :places-used="room.usage.placesUsed"
-            :capacity="room.capacity"
-            :status="room.status"
-          />
-          <span class="shrink-0 text-xs tabular-nums text-ink-muted">
-            {{ formatPercent(room.utilizationPct) }}
-          </span>
-        </div>
-
-        <p class="mt-1.5 text-xs text-ink-muted">
-          {{ capacityDescription(room.usage.placesUsed, room.capacity) }}
-          <template v-if="room.ageMismatchCount">
-            · {{ room.ageMismatchCount }} outside age range
-          </template>
-        </p>
-
-        <button
-          class="mt-2 rounded-md border border-line-strong px-2 py-1 text-xs"
-          :aria-expanded="expanded.has(room.classroom.id)"
-          :aria-controls="`occupants-m-${room.classroom.id}`"
-          @click="toggle(room.classroom.id)"
-        >
-          {{ expanded.has(room.classroom.id) ? 'Hide' : 'Show' }}
-          {{ pluralise(room.usage.headcount, 'child', 'children') }}
-        </button>
 
         <div
           v-show="expanded.has(room.classroom.id)"
           :id="`occupants-m-${room.classroom.id}`"
-          class="mt-3"
+          class="border-t border-rule bg-ground/60 px-4 py-3"
         >
           <DashboardOccupantList :occupants="room.occupants" :labels="labels" />
         </div>

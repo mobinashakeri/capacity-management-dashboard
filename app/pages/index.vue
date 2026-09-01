@@ -22,30 +22,32 @@ useHead({
 </script>
 
 <template>
-  <div class="min-h-dvh bg-page">
+  <div class="min-h-dvh">
     <a
       href="#dashboard"
-      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-10 focus:rounded focus:bg-card focus:px-3 focus:py-2 focus:ring-2"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-20 focus:rounded focus:bg-surface focus:px-3 focus:py-2 focus:shadow-lg"
     >
       Skip to dashboard
     </a>
 
-    <header class="border-b border-line bg-card">
+    <header class="border-b border-rule bg-surface">
       <div
-        class="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-4 px-4 py-5 sm:px-6"
+        class="mx-auto flex max-w-352 flex-wrap items-end justify-between gap-x-6 gap-y-4 px-4 py-4 sm:px-6 lg:py-5"
       >
-        <div>
-          <h1 class="text-xl font-semibold tracking-tight sm:text-2xl">
-            Capacity Management Dashboard
+        <div class="min-w-0">
+          <p class="eyebrow">Capacity desk</p>
+          <h1 class="mt-1 text-lg leading-tight font-semibold tracking-tight sm:text-xl">
+            Rooms, places and children
           </h1>
           <!--
-            The snapshot date is stated, never implied: effective_on is the end
-            of the reporting month, which for the current month is a future
-            date, so the figures describe the room as it will stand then.
+            The snapshot date is stated, never implied: effective_on is the end of
+            the reporting month, which for the current month is still ahead, so
+            these figures describe the rooms as they will stand then.
           -->
-          <p v-if="meta" class="mt-1 text-sm text-ink-muted">
-            {{ formatMonth(meta.month) }} · as of {{ formatDate(meta.effective_on) }}
-            <span class="text-xs">({{ meta.timezone }})</span>
+          <p v-if="meta" class="mt-1 text-xs text-ink-2">
+            <span class="num">{{ formatMonth(meta.month) }}</span> · as at
+            <span class="num">{{ formatDate(meta.effective_on) }}</span>
+            <span class="text-ink-2/80"> ({{ meta.timezone }})</span>
           </p>
         </div>
 
@@ -58,7 +60,7 @@ useHead({
       </div>
     </header>
 
-    <main id="dashboard" class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+    <main id="dashboard" class="mx-auto max-w-352 px-4 py-5 sm:px-6 lg:py-7">
       <UiDataState
         :state="viewState"
         :error="error"
@@ -74,28 +76,28 @@ useHead({
         -->
         <div
           v-if="model"
-          class="space-y-6 transition-opacity"
-          :class="viewState === 'refreshing' && 'pointer-events-none opacity-50'"
+          class="space-y-6 lg:space-y-8"
+          :class="viewState === 'refreshing' && 'pointer-events-none opacity-55'"
           aria-live="polite"
           :aria-busy="viewState === 'refreshing'"
         >
+          <!-- What is wrong, then what needs doing, then the numbers behind it. -->
+          <div class="grid gap-3 lg:grid-cols-5 lg:gap-4">
+            <div class="lg:col-span-2">
+              <DashboardStatusHeadline :portfolio="model.portfolio" />
+            </div>
+            <div class="lg:col-span-3">
+              <DashboardAttentionPanel :exceptions="model.exceptions" :labels="model.labels" />
+            </div>
+          </div>
+
           <DashboardPortfolioStats :portfolio="model.portfolio" />
 
-          <DashboardAttentionPanel :exceptions="model.exceptions" :labels="model.labels" />
-
-          <!--
-            Charts sit below the exceptions, not above: they answer "how are we
-            doing", which is the second question. The first is "what do I need
-            to do today", and that is the panel above.
-          -->
-          <section aria-labelledby="charts-heading" class="grid gap-3 lg:grid-cols-2">
-            <h2 id="charts-heading" class="sr-only">Capacity charts</h2>
-            <ChartsCentreUtilizationChart :centres="model.centres" />
-            <ChartsAgeGroupDemandChart :demand="model.ageGroupDemand" />
-          </section>
-
           <section aria-labelledby="centres-heading">
-            <h2 id="centres-heading" class="mb-3 text-base font-semibold">Centres</h2>
+            <div class="mb-3 flex items-baseline justify-between border-b border-rule pb-2">
+              <h2 id="centres-heading" class="text-base font-semibold">Centres</h2>
+              <p class="eyebrow">{{ model.centres.length }} sites</p>
+            </div>
             <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <DashboardCentreCard
                 v-for="centre in model.centres"
@@ -103,6 +105,16 @@ useHead({
                 :centre="centre"
                 :labels="model.labels"
               />
+            </div>
+          </section>
+
+          <section aria-labelledby="charts-heading">
+            <div class="mb-3 flex items-baseline justify-between border-b border-rule pb-2">
+              <h2 id="charts-heading" class="text-base font-semibold">Where the pressure is</h2>
+            </div>
+            <div class="grid gap-3 xl:grid-cols-2">
+              <ChartsCentreUtilizationChart :centres="model.centres" />
+              <ChartsAgeGroupDemandChart :demand="model.ageGroupDemand" />
             </div>
           </section>
 

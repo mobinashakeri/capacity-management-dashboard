@@ -1,47 +1,45 @@
 <script setup lang="ts">
 import type { CentreSummary } from '~/types/domain'
-import { AXIS_LABEL_STYLE, BASE_CHART_OPTIONS, CHART_COLORS } from '~/utils/chart-theme'
+import { BASE_CHART_OPTIONS, CATEGORY_LABEL, CHART_COLORS, VALUE_LABEL } from '~/utils/chart-theme'
 import { formatPercent, pluralise } from '~/utils/capacity/format'
 
 const props = defineProps<{ centres: CentreSummary[] }>()
 
 /**
- * Loaded on demand rather than registered as a plugin.
- *
- * ApexCharts is ~280 KB gzipped; registering it globally put it in a
- * modulepreload on every page load, ahead of numbers that are all readable
- * without it. Charts sit below the fold behind `<ClientOnly>`, so they can
- * fetch their own library once they are actually needed.
+ * Loaded on demand rather than registered as a plugin. ApexCharts is ~250 KB
+ * gzipped; as a plugin it sat in a modulepreload on every page load, ahead of
+ * numbers that read fine without it.
  */
 const ApexChart = defineAsyncComponent(() => import('vue3-apexcharts'))
 
 /**
- * Horizontal stacked bars, because comparing centres against each other is the
- * one question a table answers worse than a picture - and horizontal bars keep
- * their labels readable at phone widths where vertical ones collide.
+ * Horizontal stacked bars: comparing centres is the one question a table
+ * answers worse than a picture, and horizontal bars keep their labels legible
+ * at phone widths where vertical ones collide.
  *
- * "Over" is stacked as its own segment rather than extending "used", so a room
- * spilling past its limit is visible as a distinct block instead of a bar that
- * merely looks long.
+ * Over-capacity is its own segment rather than a longer "used" bar, so a room
+ * past its limit reads as a distinct block instead of merely a long one.
  */
 const series = computed(() => [
-  { name: 'Used', data: props.centres.map((centre) => centre.placesUsed - centre.overBy) },
+  { name: 'Taken', data: props.centres.map((centre) => centre.placesUsed - centre.overBy) },
   { name: 'Over capacity', data: props.centres.map((centre) => centre.overBy) },
-  { name: 'Available', data: props.centres.map((centre) => centre.placesAvailable) },
+  { name: 'Free', data: props.centres.map((centre) => centre.placesAvailable) },
 ])
+
+const height = computed(() => Math.max(220, props.centres.length * 62))
 
 const options = computed(() => ({
   ...BASE_CHART_OPTIONS,
   chart: { ...BASE_CHART_OPTIONS.chart, type: 'bar' as const, stacked: true },
-  colors: [CHART_COLORS.healthy, CHART_COLORS.over, CHART_COLORS.available],
-  plotOptions: { bar: { horizontal: true, borderRadius: 3, barHeight: '60%' } },
+  colors: [CHART_COLORS.ok, CHART_COLORS.over, CHART_COLORS.free],
+  plotOptions: { bar: { horizontal: true, borderRadius: 2, barHeight: '58%' } },
   xaxis: {
     categories: props.centres.map((centre) => centre.centre.name),
-    labels: AXIS_LABEL_STYLE,
-    axisBorder: { color: CHART_COLORS.line },
-    axisTicks: { color: CHART_COLORS.line },
+    labels: VALUE_LABEL,
+    axisBorder: { color: CHART_COLORS.rule },
+    axisTicks: { color: CHART_COLORS.rule },
   },
-  yaxis: { labels: AXIS_LABEL_STYLE },
+  yaxis: { labels: CATEGORY_LABEL },
   tooltip: {
     ...BASE_CHART_OPTIONS.tooltip,
     y: { formatter: (value: number) => pluralise(value, 'place') },
@@ -49,8 +47,9 @@ const options = computed(() => ({
   responsive: [
     {
       breakpoint: 640,
+      // The API supplies real abbreviations, so a narrow screen gets a shorter
+      // name rather than a cut-off one.
       options: {
-        // Abbreviations at phone widths: the API supplies them for exactly this.
         xaxis: { categories: props.centres.map((centre) => centre.centre.abbreviation) },
       },
     },
@@ -61,7 +60,7 @@ const summary = computed(() =>
   props.centres
     .map(
       (centre) =>
-        `${centre.centre.name}: ${centre.placesUsed} of ${centre.capacity} places used, ${formatPercent(centre.utilizationPct)}${
+        `${centre.centre.name}: ${centre.placesUsed} of ${centre.capacity} places taken, ${formatPercent(centre.utilizationPct)}${
           centre.overBy ? `, over capacity by ${centre.overBy}` : ''
         }`,
     )
@@ -71,17 +70,11 @@ const summary = computed(() =>
 
 <template>
   <ChartsChartFrame
-    title="Capacity by centre"
-    caption="Places used, over capacity and still available."
+    title="Places by centre"
+    caption="Taken, over capacity, and still free."
     :summary="summary"
-    :height="Math.max(200, centres.length * 56)"
+    :height="height"
   >
-    <ApexChart
-      type="bar"
-      width="100%"
-      :height="Math.max(200, centres.length * 56)"
-      :options="options"
-      :series="series"
-    />
+    <ApexChart type="bar" width="100%" :height="height" :options="options" :series="series" />
   </ChartsChartFrame>
 </template>

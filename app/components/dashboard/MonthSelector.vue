@@ -10,14 +10,14 @@ const id = useId()
 </script>
 
 <template>
-  <div class="flex items-center gap-2">
-    <label :for="id" class="text-sm text-ink-muted">Reporting month</label>
-    <div class="relative">
+  <div class="flex items-center gap-2.5">
+    <label :for="id" class="eyebrow whitespace-nowrap">Reporting month</label>
+    <div class="flex items-center gap-2">
       <select
         :id="id"
         :value="current ?? ''"
         :disabled="!months.length"
-        class="rounded-md border border-line-strong bg-card py-1.5 pr-8 pl-3 text-sm disabled:opacity-50"
+        class="num rounded border border-rule-strong bg-surface px-2.5 py-1.5 text-sm disabled:opacity-50"
         @change="emit('select', ($event.target as HTMLSelectElement).value)"
       >
         <option v-if="!current" value="" disabled>Select a month</option>
@@ -25,12 +25,13 @@ const id = useId()
           {{ formatMonth(month) }}
         </option>
       </select>
-      <!-- Progress sits next to the control that caused it, not over the page. -->
+      <!-- Progress sits beside the control that caused it, not over the page. -->
       <span
         v-if="busy"
-        class="absolute top-1/2 -right-6 size-3 -translate-y-1/2 animate-spin rounded-full border-2 border-line border-t-ink"
+        class="size-3 shrink-0 animate-spin rounded-full border-2 border-rule border-t-accent"
         aria-hidden="true"
       />
+      <span v-if="busy" class="sr-only">Loading</span>
     </div>
   </div>
 </template>
