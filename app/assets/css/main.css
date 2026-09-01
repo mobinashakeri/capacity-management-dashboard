@@ -4,21 +4,23 @@
  * Status palette. Every status is defined once here and always rendered with an
  * icon and a text label alongside the colour, so colour is never the only signal.
  */
+/* Mirrored exactly in `utils/chart-theme.ts` - ApexCharts cannot read CSS
+ * custom properties, so both files must be changed together. */
 @theme {
-  --color-status-over: oklch(0.55 0.21 27);
-  --color-status-over-bg: oklch(0.96 0.03 27);
-  --color-status-full: oklch(0.62 0.16 65);
-  --color-status-full-bg: oklch(0.96 0.04 75);
-  --color-status-healthy: oklch(0.6 0.13 160);
-  --color-status-healthy-bg: oklch(0.96 0.03 165);
-  --color-status-empty: oklch(0.58 0.02 250);
-  --color-status-empty-bg: oklch(0.96 0.005 250);
+  --color-status-over: #dc2626;
+  --color-status-over-bg: #fef2f2;
+  --color-status-full: #d97706;
+  --color-status-full-bg: #fffbeb;
+  --color-status-healthy: #059669;
+  --color-status-healthy-bg: #ecfdf5;
+  --color-status-empty: #94a3b8;
+  --color-status-empty-bg: #f8fafc;
 
-  --color-page: oklch(0.98 0.003 250);
-  --color-card: oklch(1 0 0);
-  --color-line: oklch(0.91 0.006 250);
-  --color-ink: oklch(0.25 0.02 260);
-  --color-ink-muted: oklch(0.53 0.02 260);
+  --color-page: #f8fafc;
+  --color-card: #ffffff;
+  --color-line: #e2e8f0;
+  --color-ink: #1e293b;
+  --color-ink-muted: #64748b;
 }
 
 html {
