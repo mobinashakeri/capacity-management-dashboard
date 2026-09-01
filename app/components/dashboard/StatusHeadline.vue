@@ -1,62 +1,100 @@
 <script setup lang="ts">
+import type { Meta } from '~/types/api'
 import type { PortfolioSummary } from '~/types/domain'
+import { formatDate, formatMonth } from '~/utils/capacity/dates'
 import { pluralise } from '~/utils/capacity/format'
 
-const props = defineProps<{ portfolio: PortfolioSummary }>()
+const props = defineProps<{ portfolio: PortfolioSummary; meta: Meta | null }>()
 
 /**
- * The page opens by saying what is wrong, in words.
+ * One friendly sentence saying how the month is going.
  *
- * A headline utilization figure would be the obvious thing to lead with, and it
- * would mislead: this group runs about a third full while two rooms are over
- * their limit. So the first line names the problems and the aggregate waits its
- * turn below.
+ * A headline utilization figure would be the obvious thing to lead with, and
+ * here it would mislead: this group runs about a third full while two rooms sit
+ * over their limit. So the band says what is actually happening, in words, and
+ * the aggregate waits its turn below.
  */
-const problems = computed(() => {
-  const items: { text: string; tone: 'over' | 'unassigned' }[] = []
+const summary = computed(() => {
+  const { roomsOverCapacity: over, unassignedCount: unplaced } = props.portfolio
 
-  if (props.portfolio.roomsOverCapacity > 0) {
-    items.push({
-      text: `${pluralise(props.portfolio.roomsOverCapacity, 'room')} over capacity`,
-      tone: 'over',
-    })
-  }
-  if (props.portfolio.unassignedCount > 0) {
-    items.push({
-      text: `${pluralise(props.portfolio.unassignedCount, 'child', 'children')} without a classroom`,
-      tone: 'unassigned',
-    })
-  }
+  if (!over && !unplaced) return 'Every room is within capacity and every child has a place.'
 
-  return items
+  const parts = [
+    over ? `${pluralise(over, 'room')} over capacity` : null,
+    unplaced ? `${pluralise(unplaced, 'child', 'children')} still without a classroom` : null,
+  ].filter(Boolean)
+
+  return `${parts.join(' and ')} — worth a look today.`
 })
+
+const allClear = computed(
+  () => !props.portfolio.roomsOverCapacity && !props.portfolio.unassignedCount,
+)
 </script>
 
 <template>
-  <div class="card px-4 py-5 sm:px-6 sm:py-6">
-    <p class="eyebrow">Today’s position</p>
+  <div
+    class="relative overflow-hidden rounded-card border border-line-soft"
+    :style="{
+      background:
+        'linear-gradient(115deg, var(--color-brand-tint) 0%, #ffffff 46%, var(--color-warn-tint) 100%)',
+    }"
+  >
+    <!-- Two soft brand washes, so the band has depth without a hard edge. -->
+    <span
+      class="pointer-events-none absolute -top-24 -right-16 size-72 rounded-full bg-warn/15 blur-3xl"
+      aria-hidden="true"
+    />
+    <span
+      class="pointer-events-none absolute -bottom-28 -left-10 size-72 rounded-full bg-brand/10 blur-3xl"
+      aria-hidden="true"
+    />
 
-    <p
-      v-if="problems.length"
-      class="mt-2 text-xl leading-snug font-semibold tracking-tight text-balance sm:text-2xl"
-    >
-      <template v-for="(problem, index) in problems" :key="problem.text"
-        ><span
-          class="whitespace-nowrap"
-          :class="problem.tone === 'over' ? 'text-over-text' : 'text-unassigned-text'"
-          >{{ problem.text }}</span
-        ><span v-if="index < problems.length - 1" class="text-ink-2">, and </span></template
-      ><span class="text-ink-2"> need attention.</span>
-    </p>
+    <div class="relative px-5 py-6 sm:px-8 sm:py-8">
+      <p
+        class="inline-flex items-center gap-2 rounded-full bg-white/75 px-3 py-1 text-xs font-medium text-brand-ink ring-1 ring-brand/15"
+      >
+        <span class="size-1.5 rounded-full bg-brand" aria-hidden="true" />
+        {{ meta ? formatMonth(meta.month) : 'Current month' }}
+      </p>
 
-    <p v-else class="mt-2 text-xl leading-snug font-semibold tracking-tight sm:text-2xl">
-      Every room is within capacity and every child has a place.
-    </p>
+      <h2
+        class="mt-3 max-w-2xl text-xl leading-snug font-semibold tracking-tight text-balance sm:text-[1.6rem]"
+        :class="allClear ? 'text-good-ink' : 'text-navy'"
+      >
+        {{ summary }}
+      </h2>
 
-    <p class="mt-2.5 max-w-prose text-sm text-ink-2">
-      <span class="num">{{ portfolio.placesAvailable }}</span> places are free across
-      <span class="num">{{ portfolio.classroomCount }}</span> rooms, but free places in one room
-      cannot seat a child who is over the limit in another.
-    </p>
+      <p v-if="meta" class="mt-2.5 text-sm text-body">
+        Places counted as at
+        <span class="num font-medium text-navy">{{ formatDate(meta.effective_on) }}</span>
+        · {{ meta.timezone }}
+      </p>
+
+      <dl class="mt-5 grid max-w-md grid-cols-3 gap-3">
+        <div>
+          <dt class="label">Places free</dt>
+          <dd class="figure text-2xl font-semibold">{{ portfolio.placesAvailable }}</dd>
+        </div>
+        <div>
+          <dt class="label">Rooms over</dt>
+          <dd
+            class="figure text-2xl font-semibold"
+            :class="portfolio.roomsOverCapacity > 0 && 'text-alert-ink'"
+          >
+            {{ portfolio.roomsOverCapacity }}
+          </dd>
+        </div>
+        <div>
+          <dt class="label">No classroom</dt>
+          <dd
+            class="figure text-2xl font-semibold"
+            :class="portfolio.unassignedCount > 0 && 'text-alert-ink'"
+          >
+            {{ portfolio.unassignedCount }}
+          </dd>
+        </div>
+      </dl>
+    </div>
   </div>
 </template>

@@ -1,68 +1,61 @@
 @import 'tailwindcss';
 
 /*
- * Capacity desk — visual system
+ * Clever Daycare — capacity desk
  *
- * The subject is a childcare group's operations desk: four centres, sixteen
- * rooms, and one question asked all day long — does this child have a place?
- * Capacity here is not a percentage, it is a countable number of physical
- * places, so the design is built around counting rather than around gauges.
- *
- * Type pairs IBM Plex Sans (prose, labels) with IBM Plex Mono (every number,
- * room code and eyebrow). Room numbers like 103 and 402 are codes, not words,
- * and setting them in mono makes the page read like the instrument panel it is.
- *
- * Colour is quiet everywhere except status. The ground is a cool paper, the
- * surfaces are white, and the one structural accent is a deep teal used only
- * for interaction and focus — so a red room is the loudest thing on screen.
+ * Brand colours are used as fills: buttons, chart series, place cells, chips.
+ * Text takes a darker tone of the same hue, because the brand blue, green and
+ * especially the sunny yellow do not reach 4.5:1 on white as type. Same hues,
+ * same feel, legible at every size.
  */
 
 @theme {
-  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-sans: Rubik, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: Sora, Rubik, ui-sans-serif, system-ui, sans-serif;
 
-  /* Structure */
-  --color-ink: #16232b;
-  --color-ink-2: #4a5d67;
-  --color-ground: #e7edef;
-  --color-surface: #ffffff;
-  --color-rule: #cbd7dc;
-  --color-rule-strong: #5f727b;
-  --color-accent: #0e5c63;
+  /* Ink */
+  --color-navy: #1e2041;
+  --color-body: #5d5d5d;
+  --color-line: #ececec;
+  --color-line-soft: #f2f2f2;
+  /* Interactive borders need 3:1 against white to be identifiable. */
+  --color-line-strong: #8f8f8f;
 
-  /*
-   * Status. Each has a fill (bars, chart marks, place cells — graphical
-   * objects needing 3:1), a text tone (dark enough for 4.5:1 on its own tint),
-   * and a tint used as a background.
-   *
-   * Unassigned gets its own hue because it is the only status about a person
-   * rather than a room: a child with no place is a different kind of problem
-   * from a room with too many.
-   */
-  --color-over: #c0392b;
-  --color-over-text: #96201a;
-  --color-over-tint: #fbecea;
+  /* Brand blue — primary actions, active state, the "used" series */
+  --color-brand: #0578be;
+  --color-brand-ink: #04689f;
+  --color-brand-tint: #e6f2f8;
+  --color-brand-pale: #cfe6f3;
 
-  --color-unassigned: #6d4aa8;
-  --color-unassigned-text: #55308f;
-  --color-unassigned-tint: #f1ecfa;
+  /* Magenta — over capacity and unassigned children, nothing else */
+  --color-alert: #c02181;
+  --color-alert-ink: #a81b71;
+  --color-alert-tint: #f9e9f2;
 
-  --color-warn: #b27300;
-  --color-warn-text: #7a4e00;
-  --color-warn-tint: #fbf3e3;
+  /* Sunny yellow — age range and nearly full */
+  --color-warn: #fcc30c;
+  --color-warn-ink: #8a5b00;
+  --color-warn-tint: #fff6df;
 
-  --color-ok: #2e7d5b;
-  --color-ok-text: #1f6047;
-  --color-ok-tint: #e8f3ee;
+  /* Green — healthy */
+  --color-good: #1d946c;
+  --color-good-ink: #177a58;
+  --color-good-tint: #e8f4f0;
 
-  --color-idle: #8fa3ac;
-  --color-idle-text: #55666f;
-  --color-idle-tint: #eef2f4;
+  --color-muted: #9a9a9a;
+  --color-muted-tint: #f6f6f6;
+
+  --radius-card: 1rem;
+  --radius-soft: 0.75rem;
+
+  /* Light and airy — cards lift off the page rather than being boxed in. */
+  --shadow-soft: 0 1px 2px rgb(30 32 65 / 0.04), 0 6px 20px -8px rgb(30 32 65 / 0.1);
+  --shadow-lift: 0 2px 4px rgb(30 32 65 / 0.05), 0 14px 34px -12px rgb(30 32 65 / 0.16);
 }
 
 html {
-  background-color: var(--color-ground);
-  color: var(--color-ink);
+  background-color: #ffffff;
+  color: var(--color-body);
   font-family: var(--font-sans);
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
@@ -70,15 +63,20 @@ html {
 
 body {
   min-height: 100dvh;
-  font-size: 0.875rem;
-  line-height: 1.5;
+  font-size: 0.9375rem;
+  line-height: 1.55;
 }
 
-/* One focus treatment everywhere, in the structural accent. */
+:where(h1, h2, h3, h4) {
+  font-family: var(--font-display);
+  color: var(--color-navy);
+  letter-spacing: -0.015em;
+}
+
 :where(a, button, select, input, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-brand);
   outline-offset: 2px;
-  border-radius: 3px;
+  border-radius: 6px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -92,30 +90,31 @@ body {
 }
 
 @layer components {
-  /*
-   * Section labels. Set like the ruled headings on a paper register: mono,
-   * small, widely tracked, sitting above a hairline.
-   */
-  .eyebrow {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-ink-2);
-  }
-
-  /* Every number on the page. Tabular so columns never shift between months. */
-  .num {
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: 'zero' 1;
-  }
-
+  /* Soft surface: a light lift instead of a hard border. */
   .card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-rule);
-    border-radius: 6px;
+    background: #ffffff;
+    border: 1px solid var(--color-line-soft);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--color-body);
+  }
+
+  /* Every figure: Sora, tabular, navy unless a status overrides it. */
+  .figure {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-navy);
+    letter-spacing: -0.02em;
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
   }
 }
 

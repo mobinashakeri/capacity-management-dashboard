@@ -76,7 +76,7 @@ describe('CapacityBar', () => {
     const healthy = render(5, 10, 'healthy').get('[role="meter"] > div').classes().join(' ')
 
     expect(over).not.toBe(healthy)
-    expect(over).toContain('bg-over')
+    expect(over).toContain('bg-alert')
   })
 
   it('keeps the description consistent with the pure formatter', () => {

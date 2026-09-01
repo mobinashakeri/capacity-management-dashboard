@@ -1,29 +1,30 @@
 <script setup lang="ts">
-type Tone = 'over' | 'unassigned' | 'warn' | 'ok' | 'idle'
+type Tone = 'alert' | 'warn' | 'good' | 'brand' | 'muted'
 
 withDefaults(defineProps<{ tone: Tone; label: string; count?: number | null }>(), {
   count: null,
 })
 
 /**
- * Status always arrives as a mark plus words. The mark is a shape as well as a
- * colour, so the difference survives greyscale and colour blindness.
+ * Status arrives as a mark plus words, never colour alone. The sunny brand
+ * yellow is too light to carry meaning by itself, so its mark takes a darker
+ * ring — the chip still reads as yellow, the shape still reads without colour.
  */
-const TONES: Record<Tone, { classes: string; mark: string }> = {
-  over: { classes: 'bg-over-tint text-over-text ring-over/25', mark: '▲' },
-  unassigned: { classes: 'bg-unassigned-tint text-unassigned-text ring-unassigned/25', mark: '◆' },
-  warn: { classes: 'bg-warn-tint text-warn-text ring-warn/25', mark: '●' },
-  ok: { classes: 'bg-ok-tint text-ok-text ring-ok/25', mark: '✓' },
-  idle: { classes: 'bg-idle-tint text-idle-text ring-idle/30', mark: '·' },
+const TONES: Record<Tone, { chip: string; dot: string; mark: string }> = {
+  alert: { chip: 'bg-alert-tint text-alert-ink', dot: 'bg-alert', mark: '▲' },
+  warn: { chip: 'bg-warn-tint text-warn-ink', dot: 'bg-warn ring-1 ring-warn-ink/40', mark: '●' },
+  good: { chip: 'bg-good-tint text-good-ink', dot: 'bg-good', mark: '✓' },
+  brand: { chip: 'bg-brand-tint text-brand-ink', dot: 'bg-brand', mark: '◆' },
+  muted: { chip: 'bg-muted-tint text-body', dot: 'bg-muted', mark: '·' },
 }
 </script>
 
 <template>
   <span
-    class="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs leading-5 font-medium ring-1 ring-inset"
-    :class="TONES[tone].classes"
+    class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs leading-4 font-medium"
+    :class="TONES[tone].chip"
   >
-    <span aria-hidden="true" class="text-[9px] leading-none">{{ TONES[tone].mark }}</span>
+    <span class="size-1.5 shrink-0 rounded-full" :class="TONES[tone].dot" aria-hidden="true" />
     <span v-if="count !== null" class="num font-semibold">{{ count }}</span>
     {{ label }}
   </span>

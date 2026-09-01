@@ -25,17 +25,17 @@ useHead({
   <div class="min-h-dvh">
     <a
       href="#dashboard"
-      class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-20 focus:rounded focus:bg-surface focus:px-3 focus:py-2 focus:shadow-lg"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-20 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:shadow-lg"
     >
       Skip to dashboard
     </a>
 
-    <header class="border-b border-rule bg-surface">
+    <header class="border-b border-line-soft bg-white">
       <div
         class="mx-auto flex max-w-352 flex-wrap items-end justify-between gap-x-6 gap-y-4 px-4 py-4 sm:px-6 lg:py-5"
       >
         <div class="min-w-0">
-          <p class="eyebrow">Capacity desk</p>
+          <p class="label font-semibold text-brand-ink">Clever Daycare</p>
           <h1 class="mt-1 text-lg leading-tight font-semibold tracking-tight sm:text-xl">
             Rooms, places and children
           </h1>
@@ -44,10 +44,10 @@ useHead({
             the reporting month, which for the current month is still ahead, so
             these figures describe the rooms as they will stand then.
           -->
-          <p v-if="meta" class="mt-1 text-xs text-ink-2">
+          <p v-if="meta" class="mt-1 text-xs text-body">
             <span class="num">{{ formatMonth(meta.month) }}</span> · as at
             <span class="num">{{ formatDate(meta.effective_on) }}</span>
-            <span class="text-ink-2/80"> ({{ meta.timezone }})</span>
+            <span class="text-body"> ({{ meta.timezone }})</span>
           </p>
         </div>
 
@@ -82,11 +82,11 @@ useHead({
           :aria-busy="viewState === 'refreshing'"
         >
           <!-- What is wrong, then what needs doing, then the numbers behind it. -->
-          <div class="grid gap-3 lg:grid-cols-5 lg:gap-4">
-            <div class="lg:col-span-2">
-              <DashboardStatusHeadline :portfolio="model.portfolio" />
+          <div class="grid items-stretch gap-3 lg:grid-cols-5 lg:gap-4">
+            <div class="lg:col-span-2 [&>*]:h-full">
+              <DashboardStatusHeadline :portfolio="model.portfolio" :meta="meta" />
             </div>
-            <div class="lg:col-span-3">
+            <div class="lg:col-span-3 [&>*]:h-full">
               <DashboardAttentionPanel :exceptions="model.exceptions" :labels="model.labels" />
             </div>
           </div>
@@ -94,9 +94,9 @@ useHead({
           <DashboardPortfolioStats :portfolio="model.portfolio" />
 
           <section aria-labelledby="centres-heading">
-            <div class="mb-3 flex items-baseline justify-between border-b border-rule pb-2">
+            <div class="mb-3 flex items-baseline justify-between border-b border-line-soft pb-2">
               <h2 id="centres-heading" class="text-base font-semibold">Centres</h2>
-              <p class="eyebrow">{{ model.centres.length }} sites</p>
+              <p class="label">{{ model.centres.length }} sites</p>
             </div>
             <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <DashboardCentreCard
@@ -109,7 +109,7 @@ useHead({
           </section>
 
           <section aria-labelledby="charts-heading">
-            <div class="mb-3 flex items-baseline justify-between border-b border-rule pb-2">
+            <div class="mb-3 flex items-baseline justify-between border-b border-line-soft pb-2">
               <h2 id="charts-heading" class="text-base font-semibold">Where the pressure is</h2>
             </div>
             <div class="grid gap-3 xl:grid-cols-2">

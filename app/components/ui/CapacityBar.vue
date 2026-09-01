@@ -1,7 +1,6 @@
 <script setup lang="ts">
 // `computed` is imported explicitly rather than relying on Nuxt's auto-import,
-// so this component mounts in a plain Vitest environment without standing up a
-// Nuxt test harness.
+// so this component mounts in a plain Vitest environment without a Nuxt harness.
 import { computed } from 'vue'
 import type { ClassroomStatus } from '~/types/domain'
 import { capacityDescription, capacityFillPercent } from '~/utils/capacity/format'
@@ -27,10 +26,10 @@ const description = computed(() => capacityDescription(props.placesUsed, props.c
 const fillClass = computed(
   () =>
     ({
-      over: 'bg-over',
+      over: 'bg-alert',
       full: 'bg-warn',
-      healthy: 'bg-ok',
-      empty: 'bg-idle',
+      healthy: 'bg-brand',
+      empty: 'bg-brand-pale',
     })[props.status],
 )
 </script>
@@ -42,8 +41,8 @@ const fillClass = computed(
     :aria-valuemin="0"
     :aria-valuemax="Math.max(capacity, placesUsed)"
     :aria-valuetext="description"
-    class="w-full overflow-hidden rounded-full bg-ground"
-    :class="compact ? 'h-1.5' : 'h-2'"
+    class="w-full overflow-hidden rounded-full bg-brand-tint"
+    :class="compact ? 'h-1.5' : 'h-2.5'"
   >
     <div class="h-full rounded-full" :class="fillClass" :style="{ width: `${fillPercent}%` }" />
   </div>

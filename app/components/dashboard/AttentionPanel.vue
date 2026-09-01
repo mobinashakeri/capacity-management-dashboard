@@ -6,6 +6,7 @@ const props = defineProps<{ exceptions: CapacityException[]; labels: LabelLookup
 
 type Kind = CapacityException['kind']
 type Urgency = 'act' | 'review' | 'note'
+type Tone = 'alert' | 'warn' | 'brand'
 
 /**
  * Urgency is not the same as severity.
@@ -16,13 +17,13 @@ type Urgency = 'act' | 'review' | 'note'
  * matter. Grouping by type, ordered by urgency, keeps the loud things loud
  * without hiding the quiet ones.
  */
-const GROUPS: { kind: Kind; title: string; urgency: Urgency; tone: string }[] = [
-  { kind: 'over_capacity', title: 'Over capacity', urgency: 'act', tone: 'over' },
-  { kind: 'unassigned_child', title: 'No classroom', urgency: 'act', tone: 'unassigned' },
+const GROUPS: { kind: Kind; title: string; urgency: Urgency; tone: Tone }[] = [
+  { kind: 'over_capacity', title: 'Over capacity', urgency: 'act', tone: 'alert' },
+  { kind: 'unassigned_child', title: 'No classroom', urgency: 'act', tone: 'alert' },
   { kind: 'data_integrity', title: 'Unexpected data', urgency: 'review', tone: 'warn' },
   { kind: 'age_group_mismatch', title: 'Outside age range', urgency: 'note', tone: 'warn' },
-  { kind: 'near_capacity', title: 'Filling up', urgency: 'note', tone: 'idle' },
-  { kind: 'pairing_opportunity', title: 'Room to grow', urgency: 'note', tone: 'idle' },
+  { kind: 'near_capacity', title: 'Filling up', urgency: 'note', tone: 'brand' },
+  { kind: 'pairing_opportunity', title: 'Room to grow', urgency: 'note', tone: 'brand' },
 ]
 
 const URGENCY_LABEL: Record<Urgency, string> = {
@@ -53,15 +54,25 @@ function toggle(kind: Kind) {
   open.value = next
 }
 
-const TONE_CLASS: Record<string, { rule: string; text: string; chip: string }> = {
-  over: { rule: 'bg-over', text: 'text-over-text', chip: 'bg-over-tint text-over-text' },
-  unassigned: {
-    rule: 'bg-unassigned',
-    text: 'text-unassigned-text',
-    chip: 'bg-unassigned-tint text-unassigned-text',
+const TONE_CLASS: Record<Tone, { dot: string; text: string; chip: string; row: string }> = {
+  alert: {
+    dot: 'bg-alert',
+    text: 'text-alert-ink',
+    chip: 'bg-alert text-white',
+    row: 'bg-alert-tint/45',
   },
-  warn: { rule: 'bg-warn', text: 'text-warn-text', chip: 'bg-warn-tint text-warn-text' },
-  idle: { rule: 'bg-idle', text: 'text-idle-text', chip: 'bg-idle-tint text-idle-text' },
+  warn: {
+    dot: 'bg-warn ring-1 ring-warn-ink/40',
+    text: 'text-warn-ink',
+    chip: 'bg-warn-tint text-warn-ink',
+    row: 'bg-warn-tint/40',
+  },
+  brand: {
+    dot: 'bg-brand',
+    text: 'text-brand-ink',
+    chip: 'bg-brand-tint text-brand-ink',
+    row: 'bg-brand-tint/40',
+  },
 }
 
 function headline(exception: CapacityException): string {
@@ -118,61 +129,57 @@ function where(exception: CapacityException): string | null {
 
 <template>
   <section aria-labelledby="attention-heading" class="card overflow-hidden">
-    <header
-      class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3.5 sm:px-5"
-    >
+    <header class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 py-4 sm:px-6">
       <h2 id="attention-heading" class="text-base font-semibold">Needs attention</h2>
-      <p class="text-xs text-ink-2">
-        <template v-if="actCount">
-          <span class="num font-semibold text-over-text">{{ actCount }}</span> to act on today
-        </template>
-        <template v-else-if="groups.length">Nothing urgent</template>
+      <p v-if="actCount" class="text-xs text-body">
+        <span class="figure text-sm font-semibold text-alert-ink">{{ actCount }}</span>
+        to act on today
       </p>
+      <p v-else-if="groups.length" class="text-xs text-body">Nothing urgent</p>
     </header>
 
-    <p v-if="!groups.length" class="border-t border-rule px-4 py-10 text-center text-sm text-ink-2">
-      Nothing needs attention this month.
-    </p>
+    <div v-if="!groups.length" class="px-5 pb-10 text-center">
+      <p class="mx-auto grid size-12 place-items-center rounded-full bg-good-tint text-good-ink">
+        <span aria-hidden="true">✓</span>
+      </p>
+      <p class="mt-3 text-sm text-body">Nothing needs attention this month.</p>
+    </div>
 
-    <ul v-else class="border-t border-rule">
-      <li v-for="group in groups" :key="group.kind" class="border-b border-rule last:border-b-0">
+    <ul v-else class="px-3 pb-3 sm:px-4 sm:pb-4">
+      <li v-for="group in groups" :key="group.kind" class="mb-1.5 last:mb-0">
         <h3>
           <button
-            class="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-ground/60 sm:px-5"
+            class="flex w-full items-center gap-3 rounded-soft px-3 py-3 text-left transition-colors hover:bg-line-soft sm:px-3.5"
+            :class="group.urgency === 'act' && TONE_CLASS[group.tone].row"
             :aria-expanded="open.has(group.kind)"
             :aria-controls="`group-${group.kind}`"
             @click="toggle(group.kind)"
           >
-            <!-- A coloured rule, not just a tinted word: urgency has a shape. -->
             <span
-              class="h-7 w-1 shrink-0 rounded-full"
-              :class="TONE_CLASS[group.tone]!.rule"
+              class="size-2.5 shrink-0 rounded-full"
+              :class="TONE_CLASS[group.tone].dot"
               aria-hidden="true"
             />
 
-            <span class="min-w-0 flex-1">
-              <span class="flex flex-wrap items-baseline gap-x-2">
-                <span class="font-medium" :class="group.urgency === 'act' && 'font-semibold'">
-                  {{ group.title }}
-                </span>
-                <span
-                  class="eyebrow"
-                  :class="group.urgency === 'act' && TONE_CLASS[group.tone]!.text"
-                >
-                  {{ URGENCY_LABEL[group.urgency] }}
-                </span>
+            <span class="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2">
+              <span
+                class="font-display text-sm font-semibold text-navy"
+                :class="group.urgency === 'act' && TONE_CLASS[group.tone].text"
+              >
+                {{ group.title }}
               </span>
+              <span class="text-xs text-body">{{ URGENCY_LABEL[group.urgency] }}</span>
             </span>
 
             <span
-              class="num shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold"
-              :class="TONE_CLASS[group.tone]!.chip"
+              class="num shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold"
+              :class="TONE_CLASS[group.tone].chip"
             >
               {{ group.items.length }}
             </span>
 
             <span
-              class="shrink-0 text-ink-2 transition-transform"
+              class="shrink-0 text-body transition-transform"
               :class="open.has(group.kind) && 'rotate-90'"
               aria-hidden="true"
               >›</span
@@ -181,16 +188,18 @@ function where(exception: CapacityException): string | null {
         </h3>
 
         <!-- Kept in the DOM so aria-controls always resolves. -->
-        <div v-show="open.has(group.kind)" :id="`group-${group.kind}`" class="bg-ground/50">
-          <ul class="divide-y divide-rule border-t border-rule">
+        <div v-show="open.has(group.kind)" :id="`group-${group.kind}`">
+          <ul class="mt-1 space-y-1 pl-6 sm:pl-8">
             <li
               v-for="exception in group.items"
               :key="exception.id"
-              class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 px-4 py-2.5 pl-8 sm:px-5 sm:pl-9"
+              class="rounded-soft bg-line-soft/70 px-3.5 py-2.5"
             >
-              <p class="text-sm font-medium">{{ headline(exception) }}</p>
-              <p v-if="where(exception)" class="num text-xs text-ink-2">{{ where(exception) }}</p>
-              <p class="w-full text-xs text-ink-2">{{ detail(exception) }}</p>
+              <div class="flex flex-wrap items-baseline gap-x-2.5">
+                <p class="text-sm font-medium text-navy">{{ headline(exception) }}</p>
+                <p v-if="where(exception)" class="text-xs text-body">{{ where(exception) }}</p>
+              </div>
+              <p class="mt-0.5 text-xs text-body">{{ detail(exception) }}</p>
             </li>
           </ul>
         </div>

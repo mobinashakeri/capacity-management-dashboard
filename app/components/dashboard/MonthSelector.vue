@@ -11,13 +11,13 @@ const id = useId()
 
 <template>
   <div class="flex items-center gap-2.5">
-    <label :for="id" class="eyebrow whitespace-nowrap">Reporting month</label>
+    <label :for="id" class="label whitespace-nowrap">Reporting month</label>
     <div class="flex items-center gap-2">
       <select
         :id="id"
         :value="current ?? ''"
         :disabled="!months.length"
-        class="num rounded border border-rule-strong bg-surface px-2.5 py-1.5 text-sm disabled:opacity-50"
+        class="num rounded border border-line-strong bg-white px-2.5 py-1.5 text-sm disabled:opacity-50"
         @change="emit('select', ($event.target as HTMLSelectElement).value)"
       >
         <option v-if="!current" value="" disabled>Select a month</option>
@@ -28,7 +28,7 @@ const id = useId()
       <!-- Progress sits beside the control that caused it, not over the page. -->
       <span
         v-if="busy"
-        class="size-3 shrink-0 animate-spin rounded-full border-2 border-rule border-t-accent"
+        class="size-3 shrink-0 animate-spin rounded-full border-2 border-line-soft border-t-brand"
         aria-hidden="true"
       />
       <span v-if="busy" class="sr-only">Loading</span>

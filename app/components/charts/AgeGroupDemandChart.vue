@@ -26,14 +26,16 @@ const series = computed(() => [
 const options = computed(() => ({
   ...BASE_CHART_OPTIONS,
   chart: { ...BASE_CHART_OPTIONS.chart, type: 'bar' as const },
-  colors: [CHART_COLORS.ok, CHART_COLORS.free],
-  plotOptions: { bar: { borderRadius: 2, columnWidth: '62%' } },
+  colors: [CHART_COLORS.used, CHART_COLORS.free],
+  plotOptions: {
+    bar: { borderRadius: 6, borderRadiusApplication: 'end' as const, columnWidth: '56%' },
+  },
   xaxis: {
     categories: props.demand.map((entry) => entry.label),
     // Rotated and never trimmed: "Kindergarten" reads in full at every width.
     labels: { ...CATEGORY_LABEL, rotate: -40, rotateAlways: true, maxHeight: 90 },
-    axisBorder: { color: CHART_COLORS.rule },
-    axisTicks: { color: CHART_COLORS.rule },
+    axisBorder: { color: CHART_COLORS.line },
+    axisTicks: { color: CHART_COLORS.line },
   },
   yaxis: { labels: VALUE_LABEL },
   tooltip: {

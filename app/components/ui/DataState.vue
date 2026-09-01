@@ -33,7 +33,7 @@ const RECOVERY_LIMIT = 12
   </div>
 
   <div v-else-if="state === 'error' && error" class="card p-6 sm:p-8" role="alert">
-    <p class="eyebrow" :class="error.kind === 'validation' ? 'text-warn-text' : 'text-over-text'">
+    <p class="label" :class="error.kind === 'validation' ? 'text-warn-ink' : 'text-alert-ink'">
       {{ error.kind === 'validation' ? 'Month not available' : 'Could not load' }}
     </p>
 
@@ -47,13 +47,13 @@ const RECOVERY_LIMIT = 12
       }}
     </h2>
 
-    <p class="mt-2 max-w-prose text-sm text-ink-2">{{ error.message }}</p>
+    <p class="mt-2 max-w-prose text-sm text-body">{{ error.message }}</p>
 
     <!--
       A month the API advertises can still fail: it returns 500 for 2026-01.
       Saying so stops the user retrying the same month, or assuming they mistyped.
     -->
-    <p v-if="error.kind === 'server'" class="mt-1.5 max-w-prose text-sm text-ink-2">
+    <p v-if="error.kind === 'server'" class="mt-1.5 max-w-prose text-sm text-body">
       {{
         month
           ? `${formatMonth(month)} is listed as available, but the service couldn’t return it.`
@@ -65,7 +65,7 @@ const RECOVERY_LIMIT = 12
     <div class="mt-5 flex flex-wrap gap-2">
       <button
         v-if="error.kind !== 'validation'"
-        class="rounded bg-accent px-3 py-1.5 text-sm font-medium text-white"
+        class="rounded bg-brand px-3 py-1.5 text-sm font-medium text-white"
         @click="emit('retry')"
       >
         Try again
@@ -78,19 +78,19 @@ const RECOVERY_LIMIT = 12
       -->
       <button
         v-if="month"
-        class="rounded border border-rule-strong px-3 py-1.5 text-sm font-medium"
+        class="rounded border border-line-strong px-3 py-1.5 text-sm font-medium"
         @click="emit('reset')"
       >
         Show current month
       </button>
     </div>
 
-    <div v-if="availableMonths.length" class="mt-6 border-t border-rule pt-4">
-      <p class="eyebrow">Other months</p>
+    <div v-if="availableMonths.length" class="mt-6 border-t border-line-soft pt-4">
+      <p class="label">Other months</p>
       <ul class="mt-2.5 flex flex-wrap gap-1.5">
         <li v-for="option in availableMonths.slice(0, RECOVERY_LIMIT)" :key="option">
           <button
-            class="num rounded border border-rule px-2.5 py-1 text-xs hover:border-rule-strong hover:bg-ground disabled:opacity-40"
+            class="num rounded border border-line-soft px-2.5 py-1 text-xs hover:border-line-strong hover:bg-line-soft disabled:opacity-40"
             :disabled="option === month"
             @click="emit('selectMonth', option)"
           >
@@ -102,18 +102,18 @@ const RECOVERY_LIMIT = 12
   </div>
 
   <div v-else-if="state === 'empty'" class="card p-8 text-center sm:p-12">
-    <p class="eyebrow">Nothing to show</p>
+    <p class="label">Nothing to show</p>
     <h2 class="mt-2 text-xl font-semibold tracking-tight">
       No rooms recorded for {{ month ? formatMonth(month) : 'this month' }}
     </h2>
-    <p class="mx-auto mt-2 max-w-md text-sm text-ink-2">
+    <p class="mx-auto mt-2 max-w-md text-sm text-body">
       The service returned this month successfully, but it contains no centres or rooms. Pick
       another month to carry on.
     </p>
     <ul v-if="availableMonths.length" class="mt-5 flex flex-wrap justify-center gap-1.5">
       <li v-for="option in availableMonths.slice(0, RECOVERY_LIMIT)" :key="option">
         <button
-          class="num rounded border border-rule px-2.5 py-1 text-xs hover:border-rule-strong hover:bg-ground"
+          class="num rounded border border-line-soft px-2.5 py-1 text-xs hover:border-line-strong hover:bg-line-soft"
           @click="emit('selectMonth', option)"
         >
           {{ formatMonth(option) }}

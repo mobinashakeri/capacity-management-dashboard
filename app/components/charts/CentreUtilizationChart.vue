@@ -21,9 +21,9 @@ const ApexChart = defineAsyncComponent(() => import('vue3-apexcharts'))
  * past its limit reads as a distinct block instead of merely a long one.
  */
 const series = computed(() => [
-  { name: 'Taken', data: props.centres.map((centre) => centre.placesUsed - centre.overBy) },
+  { name: 'Places taken', data: props.centres.map((centre) => centre.placesUsed - centre.overBy) },
   { name: 'Over capacity', data: props.centres.map((centre) => centre.overBy) },
-  { name: 'Free', data: props.centres.map((centre) => centre.placesAvailable) },
+  { name: 'Still free', data: props.centres.map((centre) => centre.placesAvailable) },
 ])
 
 const height = computed(() => Math.max(220, props.centres.length * 62))
@@ -31,13 +31,20 @@ const height = computed(() => Math.max(220, props.centres.length * 62))
 const options = computed(() => ({
   ...BASE_CHART_OPTIONS,
   chart: { ...BASE_CHART_OPTIONS.chart, type: 'bar' as const, stacked: true },
-  colors: [CHART_COLORS.ok, CHART_COLORS.over, CHART_COLORS.free],
-  plotOptions: { bar: { horizontal: true, borderRadius: 2, barHeight: '58%' } },
+  colors: [CHART_COLORS.used, CHART_COLORS.over, CHART_COLORS.free],
+  plotOptions: {
+    bar: {
+      horizontal: true,
+      borderRadius: 6,
+      borderRadiusApplication: 'end' as const,
+      barHeight: '54%',
+    },
+  },
   xaxis: {
     categories: props.centres.map((centre) => centre.centre.name),
     labels: VALUE_LABEL,
-    axisBorder: { color: CHART_COLORS.rule },
-    axisTicks: { color: CHART_COLORS.rule },
+    axisBorder: { color: CHART_COLORS.line },
+    axisTicks: { color: CHART_COLORS.line },
   },
   yaxis: { labels: CATEGORY_LABEL },
   tooltip: {

@@ -19,8 +19,8 @@ withDefaults(
 <template>
   <figure class="card flex min-w-0 flex-col p-4">
     <figcaption>
-      <h3 class="text-sm font-semibold">{{ title }}</h3>
-      <p v-if="caption" class="mt-1 max-w-prose text-xs text-ink-2">{{ caption }}</p>
+      <h3 class="text-base font-semibold">{{ title }}</h3>
+      <p v-if="caption" class="mt-1 max-w-prose text-xs text-body">{{ caption }}</p>
     </figcaption>
 
     <p class="sr-only">{{ summary }}</p>
@@ -30,7 +30,7 @@ withDefaults(
         <slot />
         <template #fallback>
           <!-- Reserves the plot's height so nothing shifts when it hydrates. -->
-          <div class="animate-pulse rounded bg-ground" :style="{ height: `${height}px` }" />
+          <div class="animate-pulse rounded bg-line-soft" :style="{ height: `${height}px` }" />
         </template>
       </ClientOnly>
     </div>
