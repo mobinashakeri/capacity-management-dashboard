@@ -93,6 +93,11 @@ user's mistake) · malformed `?month=` falls back to the current month.
 - **A better month picker.** It's a native `<select>` today: correct and accessible, but
   plain. A custom listbox could show each month's status inline (a dot for months with
   rooms over capacity) and mark the one the API can't serve.
+- **Split the attention panel by urgency.** It is one stacked list today, with the
+  urgency only in a label. Two columns — _Act today_ (over capacity, no classroom) beside
+  _Plan ahead_ (age range, filling up, room to grow) — would halve its height and put the
+  priority in the layout itself rather than in words the eye has to read first.
+
 - **A fuller rooms table.** Today it sorts by centre then room and filters by centre,
   nothing else. It wants: sort by utilization, by how far over a room is, or by places
   free; search across room, centre and child name — _"which room is Ivy Moore in?"_ is a
