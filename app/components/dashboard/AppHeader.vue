@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { IsoMonth, Meta } from '~/types/api'
 import { formatDate, formatMonth } from '~/utils/capacity/dates'
-import logo from '~/assets/logo-clever.jpg'
+import logo from '~/assets/images/logo-clever.jpg'
 
 defineProps<{
   meta: Meta | null
