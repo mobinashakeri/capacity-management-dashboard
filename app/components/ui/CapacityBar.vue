@@ -1,6 +1,10 @@
 <script setup lang="ts">
+// `computed` is imported explicitly rather than relying on Nuxt's auto-import,
+// so this component mounts in a plain Vitest environment without standing up a
+// Nuxt test harness.
+import { computed } from 'vue'
 import type { ClassroomStatus } from '~/types/domain'
-import { capacityDescription } from '~/utils/capacity/format'
+import { capacityDescription, capacityFillPercent } from '~/utils/capacity/format'
 
 const props = withDefaults(
   defineProps<{
@@ -13,15 +17,7 @@ const props = withDefaults(
   { compact: false },
 )
 
-/**
- * Bar length is capped at 100% so an over-capacity room cannot overflow its
- * track; the overflow is communicated by colour, the hatched cap and the label
- * beside it instead.
- */
-const fillPercent = computed(() => {
-  if (props.capacity <= 0) return props.placesUsed > 0 ? 100 : 0
-  return Math.min(100, (props.placesUsed / props.capacity) * 100)
-})
+const fillPercent = computed(() => capacityFillPercent(props.placesUsed, props.capacity))
 
 const description = computed(() => capacityDescription(props.placesUsed, props.capacity))
 

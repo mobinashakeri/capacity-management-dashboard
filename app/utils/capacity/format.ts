@@ -35,6 +35,19 @@ export function childName(child: Child): string {
 }
 
 /**
+ * How much of a capacity bar's track to fill, as a percentage.
+ *
+ * Capped at 100 so an over-capacity room cannot overflow its track - the
+ * overflow is carried by the colour and the label instead. A room with no
+ * recorded capacity but children in it fills completely rather than dividing by
+ * zero.
+ */
+export function capacityFillPercent(placesUsed: number, capacity: number): number {
+  if (capacity <= 0) return placesUsed > 0 ? 100 : 0
+  return Math.min(100, (placesUsed / capacity) * 100)
+}
+
+/**
  * The sentence a screen reader hears for a capacity bar. Colour and bar length
  * are never the only carriers of this information.
  */
