@@ -149,3 +149,41 @@ describe('August 2026, real API response', () => {
     }
   })
 })
+
+describe('age group demand, real August response', () => {
+  const demand = (label: string) => model.ageGroupDemand.find((entry) => entry.label === label)!
+
+  it('follows the order the API lists age groups in', () => {
+    expect(model.ageGroupDemand.map((entry) => entry.ageGroupId)).toEqual(
+      response.age_groups.map((group) => group.id),
+    )
+  })
+
+  it('counts every active child into exactly one age band', () => {
+    const total = model.ageGroupDemand.reduce((sum, entry) => sum + entry.children, 0)
+    expect(total).toBe(model.portfolio.headcount + model.portfolio.unassignedCount)
+  })
+
+  it('counts a room accepting several bands under each of them', () => {
+    // 402 accepts baby and toddler, so its 20 places are options for both.
+    const roomsAcceptingBaby = response.classrooms.filter((room) =>
+      room.accepted_age_group_ids.includes('baby'),
+    )
+    expect(demand('Baby').placesInAcceptingRooms).toBe(
+      roomsAcceptingBaby.reduce((sum, room) => sum + room.capacity, 0),
+    )
+  })
+
+  it('matches the total mismatches reported by the portfolio', () => {
+    const misplaced = model.ageGroupDemand.reduce((sum, entry) => sum + entry.misplaced, 0)
+    expect(misplaced).toBe(model.portfolio.ageMismatchCount)
+  })
+
+  it('reports no places for a band no room accepts', () => {
+    const orphanBands = model.ageGroupDemand.filter(
+      (entry) => entry.placesInAcceptingRooms === 0 && entry.children > 0,
+    )
+    // Every band with children should have somewhere it is allowed to sit.
+    expect(orphanBands).toEqual([])
+  })
+})

@@ -1,5 +1,6 @@
 import type { CapacityOverviewResponse, Centre, Classroom, Enrolment, IsoDate } from '~/types/api'
 import type {
+  AgeGroupDemand,
   CapacityTotals,
   CentreSummary,
   ClassroomStatus,
@@ -174,6 +175,38 @@ function totalsOf(classrooms: ClassroomSummary[]): CapacityTotals {
 const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name)
 
 /**
+ * Demand per age band against the places that could take it.
+ *
+ * Ordered by the API's own `age_groups` list, which runs youngest to oldest -
+ * relying on that ordering keeps the chart's x-axis meaningful without
+ * hardcoding a sequence the API might change.
+ */
+function summariseAgeGroupDemand(
+  response: CapacityOverviewResponse,
+  classrooms: ClassroomSummary[],
+  activeEnrolments: Enrolment[],
+): AgeGroupDemand[] {
+  return response.age_groups.map((group) => {
+    const children = activeEnrolments.filter((enrolment) => enrolment.age_group === group.id).length
+
+    const placesInAcceptingRooms = classrooms
+      .filter((room) => room.classroom.accepted_age_group_ids.includes(group.id))
+      .reduce((sum, room) => sum + room.capacity, 0)
+
+    const misplaced = classrooms.reduce(
+      (sum, room) =>
+        sum +
+        room.occupants.filter(
+          (occupant) => occupant.ageGroup === group.id && !occupant.ageGroupMatches,
+        ).length,
+      0,
+    )
+
+    return { ageGroupId: group.id, label: group.label, children, placesInAcceptingRooms, misplaced }
+  })
+}
+
+/**
  * Turns one raw API response into everything the dashboard renders.
  *
  * Pure and framework-free by design: it takes plain data and returns plain
@@ -254,6 +287,11 @@ export function buildDashboardModel(response: CapacityOverviewResponse): Dashboa
         ]),
       ),
     },
+    ageGroupDemand: summariseAgeGroupDemand(
+      response,
+      classrooms,
+      response.enrolments.filter((enrolment) => isActiveOn(enrolment, effectiveOn)),
+    ),
     portfolio,
     centres,
     classrooms,

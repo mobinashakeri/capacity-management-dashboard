@@ -180,9 +180,29 @@ export interface LabelLookup {
   attendanceTypes: Record<string, { label: string; abbreviation: string }>
 }
 
+/**
+ * Demand for each age band against the rooms that accept it.
+ *
+ * `placesInAcceptingRooms` deliberately double-counts: a room accepting both
+ * Baby and Toddler contributes its full capacity to each band, because those
+ * places really are available to either. It is an upper bound on where a child
+ * could go, not a private allocation - which is what makes it useful for
+ * deciding a move, and why the UI labels it as rooms that *accept* the band.
+ */
+export interface AgeGroupDemand {
+  ageGroupId: AgeGroupId
+  label: string
+  /** Active children in this band, including those not assigned to a room. */
+  children: number
+  placesInAcceptingRooms: number
+  /** Children of this band sitting in a room that does not accept it. */
+  misplaced: number
+}
+
 export interface DashboardModel {
   meta: Meta
   labels: LabelLookup
+  ageGroupDemand: AgeGroupDemand[]
   portfolio: PortfolioSummary
   centres: CentreSummary[]
   classrooms: ClassroomSummary[]
