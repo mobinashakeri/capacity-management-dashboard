@@ -17,7 +17,13 @@ jobs:
           node-version: 22
           cache: npm
 
-      - run: npm ci
+      # Node 22 ships npm 10, but the lock file is written by npm 11. npm 10
+      # fails immediately on the entries npm 11 writes without a `resolved`
+      # field for bundled WASM packages, so the toolchain is matched instead.
+      - name: Match the npm that wrote the lock file
+        run: npm install -g npm@11
+
+      - run: npm ci --foreground-scripts
 
       - name: Check formatting
         run: npm run format:check
