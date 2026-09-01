@@ -16,9 +16,23 @@
   --color-status-empty: #94a3b8;
   --color-status-empty-bg: #f8fafc;
 
+  /*
+   * Darker tones for status *text*. The vivid colours above are only ever used
+   * for bars, fills and chart marks, which are graphical objects needing 3:1;
+   * as text on their own tint they fell short of the 4.5:1 AA threshold, so
+   * anything a user reads uses these instead.
+   */
+  --color-status-over-text: #b91c1c;
+  --color-status-full-text: #b45309;
+  --color-status-healthy-text: #047857;
+  --color-status-empty-text: #475569;
+
   --color-page: #f8fafc;
   --color-card: #ffffff;
+  /* Decorative dividers and card edges. */
   --color-line: #e2e8f0;
+  /* Interactive control borders, which must reach 3:1 to be identifiable. */
+  --color-line-strong: #64748b;
   --color-ink: #1e293b;
   --color-ink-muted: #64748b;
 }

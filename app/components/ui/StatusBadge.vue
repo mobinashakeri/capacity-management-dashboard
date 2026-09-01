@@ -10,10 +10,13 @@ withDefaults(defineProps<{ tone: Tone; label: string; icon?: string }>(), { icon
  * has to survive greyscale printing and colour blindness.
  */
 const TONES: Record<Tone, { classes: string; icon: string }> = {
-  critical: { classes: 'bg-status-over-bg text-status-over ring-status-over/30', icon: '!' },
-  warning: { classes: 'bg-status-full-bg text-status-full ring-status-full/30', icon: '▲' },
-  info: { classes: 'bg-status-empty-bg text-status-empty ring-status-empty/30', icon: 'i' },
-  ok: { classes: 'bg-status-healthy-bg text-status-healthy ring-status-healthy/30', icon: '✓' },
+  critical: { classes: 'bg-status-over-bg text-status-over-text ring-status-over/30', icon: '!' },
+  warning: { classes: 'bg-status-full-bg text-status-full-text ring-status-full/40', icon: '▲' },
+  info: { classes: 'bg-status-empty-bg text-status-empty-text ring-status-empty/40', icon: 'i' },
+  ok: {
+    classes: 'bg-status-healthy-bg text-status-healthy-text ring-status-healthy/30',
+    icon: '✓',
+  },
   neutral: { classes: 'bg-page text-ink-muted ring-line', icon: '·' },
 }
 </script>

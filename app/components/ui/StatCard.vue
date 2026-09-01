@@ -14,8 +14,8 @@ withDefaults(
 
 const TONES: Record<Tone, string> = {
   default: 'text-ink',
-  critical: 'text-status-over',
-  warning: 'text-status-full',
+  critical: 'text-status-over-text',
+  warning: 'text-status-full-text',
 }
 </script>
 

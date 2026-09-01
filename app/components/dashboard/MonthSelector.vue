@@ -17,7 +17,7 @@ const id = useId()
         :id="id"
         :value="current ?? ''"
         :disabled="!months.length"
-        class="rounded-md border border-line bg-card py-1.5 pr-8 pl-3 text-sm disabled:opacity-50"
+        class="rounded-md border border-line-strong bg-card py-1.5 pr-8 pl-3 text-sm disabled:opacity-50"
         @change="emit('select', ($event.target as HTMLSelectElement).value)"
       >
         <option v-if="!current" value="" disabled>Select a month</option>

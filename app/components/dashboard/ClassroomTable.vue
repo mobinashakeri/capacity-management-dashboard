@@ -61,7 +61,10 @@ function acceptedGroups(room: ClassroomSummary): string {
 
       <label class="text-sm">
         <span class="mr-2 text-ink-muted">Centre</span>
-        <select v-model="centreFilter" class="rounded-md border border-line bg-card px-2 py-1">
+        <select
+          v-model="centreFilter"
+          class="rounded-md border border-line-strong bg-card px-2 py-1"
+        >
           <option value="all">All centres</option>
           <option v-for="centre in centres" :key="centre.id" :value="centre.id">
             {{ centre.name }}
@@ -116,7 +119,7 @@ function acceptedGroups(room: ClassroomSummary): string {
                 </span>
               </td>
               <td class="px-4 py-2.5 text-right tabular-nums">
-                <span v-if="room.overBy" class="font-medium text-status-over">
+                <span v-if="room.overBy" class="font-medium text-status-over-text">
                   +{{ room.overBy }} over
                 </span>
                 <span v-else>{{ room.placesAvailable }}</span>
@@ -149,7 +152,7 @@ function acceptedGroups(room: ClassroomSummary): string {
               </td>
               <td class="px-4 py-2.5 text-right">
                 <button
-                  class="rounded-md border border-line px-2 py-1 text-xs whitespace-nowrap hover:bg-page"
+                  class="rounded-md border border-line-strong px-2 py-1 text-xs whitespace-nowrap hover:bg-page"
                   :aria-expanded="expanded.has(room.classroom.id)"
                   :aria-controls="`occupants-${room.classroom.id}`"
                   @click="toggle(room.classroom.id)"
@@ -160,7 +163,11 @@ function acceptedGroups(room: ClassroomSummary): string {
               </td>
             </tr>
 
-            <tr v-if="expanded.has(room.classroom.id)">
+            <!--
+              Kept in the DOM and hidden rather than removed, so the aria-controls
+              on the toggle always points at an element that exists.
+            -->
+            <tr v-show="expanded.has(room.classroom.id)">
               <td :id="`occupants-${room.classroom.id}`" colspan="8" class="bg-page px-4 py-3">
                 <DashboardOccupantList :occupants="room.occupants" :labels="labels" />
               </td>
@@ -204,7 +211,7 @@ function acceptedGroups(room: ClassroomSummary): string {
         </p>
 
         <button
-          class="mt-2 rounded-md border border-line px-2 py-1 text-xs"
+          class="mt-2 rounded-md border border-line-strong px-2 py-1 text-xs"
           :aria-expanded="expanded.has(room.classroom.id)"
           :aria-controls="`occupants-m-${room.classroom.id}`"
           @click="toggle(room.classroom.id)"
@@ -214,7 +221,7 @@ function acceptedGroups(room: ClassroomSummary): string {
         </button>
 
         <div
-          v-if="expanded.has(room.classroom.id)"
+          v-show="expanded.has(room.classroom.id)"
           :id="`occupants-m-${room.classroom.id}`"
           class="mt-3"
         >
