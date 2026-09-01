@@ -2,53 +2,61 @@
  * Chart colours.
  *
  * ApexCharts renders SVG and needs literal colour strings, so it cannot read
- * the CSS custom properties the rest of the UI uses. These values are the
- * single source of truth and `assets/css/main.css` mirrors them exactly - if
- * one changes, change both.
+ * the CSS custom properties the rest of the UI uses. These values mirror the
+ * `@theme` block in `assets/css/main.css` exactly — change one, change both.
  */
 export const CHART_COLORS = {
-  over: '#dc2626',
-  full: '#d97706',
-  healthy: '#059669',
-  empty: '#94a3b8',
-  available: '#cbd5e1',
-  ink: '#1e293b',
-  inkMuted: '#64748b',
-  line: '#e2e8f0',
+  over: '#c0392b',
+  unassigned: '#6d4aa8',
+  warn: '#b27300',
+  ok: '#2e7d5b',
+  idle: '#8fa3ac',
+  free: '#cbd7dc',
+  ink: '#16232b',
+  ink2: '#4a5d67',
+  rule: '#cbd7dc',
 } as const
 
+const FONT = "'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif"
+const MONO = "'IBM Plex Mono', ui-monospace, monospace"
+
 /**
- * Options shared by every chart.
+ * Shared options.
  *
- * Toolbars and animations are off: the toolbar's export/zoom controls are noise
- * on a dashboard this size, and animation is disabled so a month switch does
- * not re-run a bar race every time - which also respects reduced-motion
- * preferences without a separate media query.
+ * Animation is off: a dashboard that replays a bar race on every month change
+ * costs attention and gives nothing back, and switching it off means reduced
+ * motion is respected without a separate branch.
  */
 export const BASE_CHART_OPTIONS = {
   chart: {
     toolbar: { show: false },
     animations: { enabled: false },
-    fontFamily: 'inherit',
+    fontFamily: FONT,
     background: 'transparent',
   },
-  grid: {
-    borderColor: CHART_COLORS.line,
-    strokeDashArray: 4,
-  },
+  grid: { borderColor: CHART_COLORS.rule, strokeDashArray: 3 },
   dataLabels: { enabled: false },
   legend: {
     position: 'bottom' as const,
     horizontalAlign: 'left' as const,
     fontSize: '12px',
-    markers: { size: 6 },
-    itemMargin: { horizontal: 8, vertical: 4 },
+    fontFamily: FONT,
+    labels: { colors: CHART_COLORS.ink2 },
+    markers: { size: 5 },
+    itemMargin: { horizontal: 10, vertical: 4 },
   },
-  tooltip: { theme: 'light' as const },
+  tooltip: { theme: 'light' as const, style: { fontFamily: FONT } },
   states: { active: { filter: { type: 'none' as const } } },
 }
 
-/** Axis label styling, applied to whichever axis carries the categories. */
-export const AXIS_LABEL_STYLE = {
-  style: { colors: CHART_COLORS.inkMuted, fontSize: '12px' },
+/** Category labels: never truncated, so a long age band still reads in full. */
+export const CATEGORY_LABEL = {
+  style: { colors: CHART_COLORS.ink2, fontSize: '11px', fontFamily: FONT },
+  trim: false,
+  hideOverlappingLabels: false,
+}
+
+/** Value axis labels are numbers, so they take the mono face. */
+export const VALUE_LABEL = {
+  style: { colors: CHART_COLORS.ink2, fontSize: '11px', fontFamily: MONO },
 }

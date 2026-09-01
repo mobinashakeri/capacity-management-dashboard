@@ -1,57 +1,84 @@
 @import 'tailwindcss';
 
 /*
- * Status palette. Every status is defined once here and always rendered with an
- * icon and a text label alongside the colour, so colour is never the only signal.
+ * Capacity desk — visual system
+ *
+ * The subject is a childcare group's operations desk: four centres, sixteen
+ * rooms, and one question asked all day long — does this child have a place?
+ * Capacity here is not a percentage, it is a countable number of physical
+ * places, so the design is built around counting rather than around gauges.
+ *
+ * Type pairs IBM Plex Sans (prose, labels) with IBM Plex Mono (every number,
+ * room code and eyebrow). Room numbers like 103 and 402 are codes, not words,
+ * and setting them in mono makes the page read like the instrument panel it is.
+ *
+ * Colour is quiet everywhere except status. The ground is a cool paper, the
+ * surfaces are white, and the one structural accent is a deep teal used only
+ * for interaction and focus — so a red room is the loudest thing on screen.
  */
-/* Mirrored exactly in `utils/chart-theme.ts` - ApexCharts cannot read CSS
- * custom properties, so both files must be changed together. */
+
 @theme {
-  --color-status-over: #dc2626;
-  --color-status-over-bg: #fef2f2;
-  --color-status-full: #d97706;
-  --color-status-full-bg: #fffbeb;
-  --color-status-healthy: #059669;
-  --color-status-healthy-bg: #ecfdf5;
-  --color-status-empty: #94a3b8;
-  --color-status-empty-bg: #f8fafc;
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* Structure */
+  --color-ink: #16232b;
+  --color-ink-2: #4a5d67;
+  --color-ground: #e7edef;
+  --color-surface: #ffffff;
+  --color-rule: #cbd7dc;
+  --color-rule-strong: #5f727b;
+  --color-accent: #0e5c63;
 
   /*
-   * Darker tones for status *text*. The vivid colours above are only ever used
-   * for bars, fills and chart marks, which are graphical objects needing 3:1;
-   * as text on their own tint they fell short of the 4.5:1 AA threshold, so
-   * anything a user reads uses these instead.
+   * Status. Each has a fill (bars, chart marks, place cells — graphical
+   * objects needing 3:1), a text tone (dark enough for 4.5:1 on its own tint),
+   * and a tint used as a background.
+   *
+   * Unassigned gets its own hue because it is the only status about a person
+   * rather than a room: a child with no place is a different kind of problem
+   * from a room with too many.
    */
-  --color-status-over-text: #b91c1c;
-  --color-status-full-text: #b45309;
-  --color-status-healthy-text: #047857;
-  --color-status-empty-text: #475569;
+  --color-over: #c0392b;
+  --color-over-text: #96201a;
+  --color-over-tint: #fbecea;
 
-  --color-page: #f8fafc;
-  --color-card: #ffffff;
-  /* Decorative dividers and card edges. */
-  --color-line: #e2e8f0;
-  /* Interactive control borders, which must reach 3:1 to be identifiable. */
-  --color-line-strong: #64748b;
-  --color-ink: #1e293b;
-  --color-ink-muted: #64748b;
+  --color-unassigned: #6d4aa8;
+  --color-unassigned-text: #55308f;
+  --color-unassigned-tint: #f1ecfa;
+
+  --color-warn: #b27300;
+  --color-warn-text: #7a4e00;
+  --color-warn-tint: #fbf3e3;
+
+  --color-ok: #2e7d5b;
+  --color-ok-text: #1f6047;
+  --color-ok-tint: #e8f3ee;
+
+  --color-idle: #8fa3ac;
+  --color-idle-text: #55666f;
+  --color-idle-tint: #eef2f4;
 }
 
 html {
-  background-color: var(--color-page);
+  background-color: var(--color-ground);
   color: var(--color-ink);
+  font-family: var(--font-sans);
   -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
   min-height: 100dvh;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
-/* Visible keyboard focus everywhere, including on custom controls. */
+/* One focus treatment everywhere, in the structural accent. */
 :where(a, button, select, input, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-status-healthy);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
-  border-radius: 0.25rem;
+  border-radius: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -61,6 +88,34 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@layer components {
+  /*
+   * Section labels. Set like the ruled headings on a paper register: mono,
+   * small, widely tracked, sitting above a hairline.
+   */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink-2);
+  }
+
+  /* Every number on the page. Tabular so columns never shift between months. */
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'zero' 1;
+  }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-rule);
+    border-radius: 6px;
   }
 }
 
