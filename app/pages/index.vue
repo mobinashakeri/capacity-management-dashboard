@@ -1,66 +1,102 @@
 <script setup lang="ts">
 import { formatDate, formatMonth } from '~/utils/capacity/dates'
 
-const { model, meta, error, viewState, availableMonths, selectedMonth, selectMonth, refresh } =
-  useCapacityOverview()
+const {
+  model,
+  meta,
+  error,
+  viewState,
+  isPending,
+  availableMonths,
+  reportingMonth,
+  selectMonth,
+  refresh,
+} = useCapacityOverview()
+
+useHead({
+  title: () =>
+    reportingMonth.value
+      ? `Capacity · ${formatMonth(reportingMonth.value)}`
+      : 'Capacity Management Dashboard',
+})
 </script>
 
 <template>
-  <main class="mx-auto max-w-5xl px-4 py-10">
-    <header class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-semibold tracking-tight">Capacity Management Dashboard</h1>
-        <p v-if="meta" class="mt-1 text-sm text-ink-muted">
-          {{ formatMonth(meta.month) }} · as of {{ formatDate(meta.effective_on) }} ({{
-            meta.timezone
-          }})
-        </p>
-      </div>
+  <div class="min-h-dvh bg-page">
+    <a
+      href="#dashboard"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-10 focus:rounded focus:bg-card focus:px-3 focus:py-2 focus:ring-2"
+    >
+      Skip to dashboard
+    </a>
 
-      <label class="text-sm">
-        <span class="mr-2">Month</span>
-        <select
-          :value="selectedMonth ?? meta?.month ?? ''"
-          class="rounded border border-line bg-card px-2 py-1"
-          @change="selectMonth(($event.target as HTMLSelectElement).value)"
-        >
-          <option v-for="month in availableMonths" :key="month" :value="month">
-            {{ formatMonth(month) }}
-          </option>
-        </select>
-      </label>
+    <header class="border-b border-line bg-card">
+      <div
+        class="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-4 px-4 py-5 sm:px-6"
+      >
+        <div>
+          <h1 class="text-xl font-semibold tracking-tight sm:text-2xl">
+            Capacity Management Dashboard
+          </h1>
+          <!--
+            The snapshot date is stated, never implied: effective_on is the end
+            of the reporting month, which for the current month is a future
+            date, so the figures describe the room as it will stand then.
+          -->
+          <p v-if="meta" class="mt-1 text-sm text-ink-muted">
+            {{ formatMonth(meta.month) }} · as of {{ formatDate(meta.effective_on) }}
+            <span class="text-xs">({{ meta.timezone }})</span>
+          </p>
+        </div>
+
+        <DashboardMonthSelector
+          :months="availableMonths"
+          :current="reportingMonth"
+          :busy="isPending"
+          @select="selectMonth"
+        />
+      </div>
     </header>
 
-    <p class="mt-6 text-xs text-ink-muted">State: {{ viewState }}</p>
-
-    <div v-if="error" class="mt-4 rounded border border-line bg-status-over-bg p-4">
-      <p class="font-medium">{{ error.message }}</p>
-      <button class="mt-2 rounded border border-line px-3 py-1 text-sm" @click="refresh()">
-        Try again
-      </button>
-    </div>
-
-    <dl v-else-if="model" class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
-      <div
-        v-for="stat in [
-          { label: 'Capacity', value: model.portfolio.capacity },
-          { label: 'Places used', value: model.portfolio.placesUsed },
-          { label: 'Places available', value: model.portfolio.placesAvailable },
-          { label: 'Rooms over capacity', value: model.portfolio.roomsOverCapacity },
-          { label: 'Unassigned children', value: model.portfolio.unassignedCount },
-          { label: 'Age mismatches', value: model.portfolio.ageMismatchCount },
-        ]"
-        :key="stat.label"
-        class="rounded border border-line bg-card p-4"
+    <main id="dashboard" class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+      <UiDataState
+        :state="viewState"
+        :error="error"
+        :month="reportingMonth"
+        :available-months="availableMonths"
+        @retry="refresh()"
+        @select-month="selectMonth"
       >
-        <dt class="text-sm text-ink-muted">{{ stat.label }}</dt>
-        <dd class="mt-1 text-2xl font-semibold tabular-nums">{{ stat.value }}</dd>
-      </div>
-    </dl>
+        <!--
+          Data stays on screen while the next month loads, dimmed rather than
+          replaced by a skeleton, so a comparison is never interrupted.
+        -->
+        <div
+          v-if="model"
+          class="space-y-6 transition-opacity"
+          :class="viewState === 'refreshing' && 'pointer-events-none opacity-50'"
+          aria-live="polite"
+          :aria-busy="viewState === 'refreshing'"
+        >
+          <DashboardPortfolioStats :portfolio="model.portfolio" />
 
-    <p v-if="model" class="mt-6 text-sm text-ink-muted">
-      {{ model.exceptions.length }} exceptions across
-      {{ model.portfolio.classroomCount }} classrooms.
-    </p>
-  </main>
+          <DashboardAttentionPanel :exceptions="model.exceptions" :labels="model.labels" />
+
+          <section aria-labelledby="centres-heading">
+            <h2 id="centres-heading" class="mb-3 text-base font-semibold">Centres</h2>
+            <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <DashboardCentreCard
+                v-for="centre in model.centres"
+                :key="centre.centre.id"
+                :centre="centre"
+                :labels="model.labels"
+              />
+            </div>
+          </section>
+
+          <DashboardClassroomTable :classrooms="model.classrooms" :labels="model.labels" />
+        </div>
+      </UiDataState>
+    </main>
+  </div>
 </template>
