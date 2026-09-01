@@ -245,6 +245,15 @@ export function buildDashboardModel(response: CapacityOverviewResponse): Dashboa
 
   return {
     meta: response.meta,
+    labels: {
+      ageGroups: Object.fromEntries(response.age_groups.map((group) => [group.id, group.label])),
+      attendanceTypes: Object.fromEntries(
+        response.attendance_types.map((type) => [
+          type.id,
+          { label: type.label, abbreviation: type.abbreviation },
+        ]),
+      ),
+    },
     portfolio,
     centres,
     classrooms,

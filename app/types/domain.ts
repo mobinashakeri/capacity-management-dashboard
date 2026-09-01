@@ -170,8 +170,19 @@ export type CapacityException =
       opportunity: PairingOpportunity
     }
 
+/**
+ * Display names taken from the response rather than hardcoded, so the UI shows
+ * whatever the API calls these things. Keyed loosely because an id outside the
+ * documented union should still render something sensible.
+ */
+export interface LabelLookup {
+  ageGroups: Record<string, string>
+  attendanceTypes: Record<string, { label: string; abbreviation: string }>
+}
+
 export interface DashboardModel {
   meta: Meta
+  labels: LabelLookup
   portfolio: PortfolioSummary
   centres: CentreSummary[]
   classrooms: ClassroomSummary[]
