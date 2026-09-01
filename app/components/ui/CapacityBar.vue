@@ -11,12 +11,15 @@ const props = withDefaults(
     placesUsed: number
     capacity: number
     status: ClassroomStatus
-    /** Renders a thinner bar for use inside dense table rows. */
     compact?: boolean
   }>(),
   { compact: false },
 )
 
+/**
+ * Used where a room's places would be too many to count — a whole centre holds
+ * hundreds. Rooms themselves use PlaceGrid, which shows the actual places.
+ */
 const fillPercent = computed(() => capacityFillPercent(props.placesUsed, props.capacity))
 
 const description = computed(() => capacityDescription(props.placesUsed, props.capacity))
@@ -24,10 +27,10 @@ const description = computed(() => capacityDescription(props.placesUsed, props.c
 const fillClass = computed(
   () =>
     ({
-      over: 'bg-status-over',
-      full: 'bg-status-full',
-      healthy: 'bg-status-healthy',
-      empty: 'bg-status-empty/30',
+      over: 'bg-over',
+      full: 'bg-warn',
+      healthy: 'bg-ok',
+      empty: 'bg-idle',
     })[props.status],
 )
 </script>
@@ -39,13 +42,9 @@ const fillClass = computed(
     :aria-valuemin="0"
     :aria-valuemax="Math.max(capacity, placesUsed)"
     :aria-valuetext="description"
-    class="h-2 w-full overflow-hidden rounded-full bg-line"
+    class="w-full overflow-hidden rounded-full bg-ground"
     :class="compact ? 'h-1.5' : 'h-2'"
   >
-    <div
-      class="h-full rounded-full transition-[width] duration-300"
-      :class="[fillClass, status === 'over' && 'ring-1 ring-status-over ring-inset']"
-      :style="{ width: `${fillPercent}%` }"
-    />
+    <div class="h-full rounded-full" :class="fillClass" :style="{ width: `${fillPercent}%` }" />
   </div>
 </template>

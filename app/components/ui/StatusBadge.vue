@@ -1,32 +1,30 @@
 <script setup lang="ts">
-import type { ExceptionSeverity } from '~/types/domain'
+type Tone = 'over' | 'unassigned' | 'warn' | 'ok' | 'idle'
 
-type Tone = ExceptionSeverity | 'ok' | 'neutral'
-
-withDefaults(defineProps<{ tone: Tone; label: string; icon?: string }>(), { icon: undefined })
+withDefaults(defineProps<{ tone: Tone; label: string; count?: number | null }>(), {
+  count: null,
+})
 
 /**
- * Every badge carries an icon and a text label, never colour alone - the status
- * has to survive greyscale printing and colour blindness.
+ * Status always arrives as a mark plus words. The mark is a shape as well as a
+ * colour, so the difference survives greyscale and colour blindness.
  */
-const TONES: Record<Tone, { classes: string; icon: string }> = {
-  critical: { classes: 'bg-status-over-bg text-status-over-text ring-status-over/30', icon: '!' },
-  warning: { classes: 'bg-status-full-bg text-status-full-text ring-status-full/40', icon: '▲' },
-  info: { classes: 'bg-status-empty-bg text-status-empty-text ring-status-empty/40', icon: 'i' },
-  ok: {
-    classes: 'bg-status-healthy-bg text-status-healthy-text ring-status-healthy/30',
-    icon: '✓',
-  },
-  neutral: { classes: 'bg-page text-ink-muted ring-line', icon: '·' },
+const TONES: Record<Tone, { classes: string; mark: string }> = {
+  over: { classes: 'bg-over-tint text-over-text ring-over/25', mark: '▲' },
+  unassigned: { classes: 'bg-unassigned-tint text-unassigned-text ring-unassigned/25', mark: '◆' },
+  warn: { classes: 'bg-warn-tint text-warn-text ring-warn/25', mark: '●' },
+  ok: { classes: 'bg-ok-tint text-ok-text ring-ok/25', mark: '✓' },
+  idle: { classes: 'bg-idle-tint text-idle-text ring-idle/30', mark: '·' },
 }
 </script>
 
 <template>
   <span
-    class="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset"
+    class="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs leading-5 font-medium ring-1 ring-inset"
     :class="TONES[tone].classes"
   >
-    <span aria-hidden="true" class="font-bold">{{ icon ?? TONES[tone].icon }}</span>
+    <span aria-hidden="true" class="text-[9px] leading-none">{{ TONES[tone].mark }}</span>
+    <span v-if="count !== null" class="num font-semibold">{{ count }}</span>
     {{ label }}
   </span>
 </template>

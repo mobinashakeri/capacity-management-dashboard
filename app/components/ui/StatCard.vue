@@ -1,5 +1,5 @@
 <script setup lang="ts">
-type Tone = 'default' | 'critical' | 'warning'
+type Tone = 'default' | 'over' | 'unassigned'
 
 withDefaults(
   defineProps<{
@@ -14,18 +14,17 @@ withDefaults(
 
 const TONES: Record<Tone, string> = {
   default: 'text-ink',
-  critical: 'text-status-over-text',
-  warning: 'text-status-full-text',
+  over: 'text-over-text',
+  unassigned: 'text-unassigned-text',
 }
 </script>
 
 <template>
-  <div class="rounded-lg border border-line bg-card p-4">
-    <dt class="text-sm text-ink-muted">{{ label }}</dt>
-    <!-- Tabular figures stop the numbers jittering as months change. -->
-    <dd class="mt-1 text-2xl font-semibold tabular-nums" :class="TONES[tone]">
+  <div class="card flex flex-col justify-between p-3 sm:p-4">
+    <dt class="eyebrow">{{ label }}</dt>
+    <dd class="num mt-2 text-2xl leading-none font-semibold sm:text-[1.75rem]" :class="TONES[tone]">
       {{ value }}
     </dd>
-    <p v-if="hint" class="mt-0.5 text-xs text-ink-muted">{{ hint }}</p>
+    <p v-if="hint" class="mt-1.5 text-xs text-ink-2">{{ hint }}</p>
   </div>
 </template>
