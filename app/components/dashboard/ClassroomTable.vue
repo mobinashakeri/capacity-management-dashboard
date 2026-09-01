@@ -172,6 +172,7 @@ function acceptedGroups(room: ClassroomSummary): string {
 
               <td class="px-5 py-3.5 text-right sm:px-6">
                 <button
+                  v-if="room.usage.headcount > 0"
                   class="rounded-full border border-line px-3 py-1.5 text-xs whitespace-nowrap text-brand-ink transition-colors hover:bg-brand-tint"
                   :aria-expanded="expanded.has(room.classroom.id)"
                   :aria-controls="`occupants-${room.classroom.id}`"
@@ -180,6 +181,7 @@ function acceptedGroups(room: ClassroomSummary): string {
                   {{ expanded.has(room.classroom.id) ? 'Hide' : 'Show' }}
                   {{ pluralise(room.usage.headcount, 'child', 'children') }}
                 </button>
+                <span v-else class="text-xs text-body">Nobody enrolled yet</span>
               </td>
             </tr>
 
@@ -250,6 +252,7 @@ function acceptedGroups(room: ClassroomSummary): string {
           </div>
 
           <button
+            v-if="room.usage.headcount > 0"
             class="mt-3.5 rounded-full border border-line px-3.5 py-1.5 text-xs text-brand-ink"
             :aria-expanded="expanded.has(room.classroom.id)"
             :aria-controls="`occupants-m-${room.classroom.id}`"
@@ -258,6 +261,7 @@ function acceptedGroups(room: ClassroomSummary): string {
             {{ expanded.has(room.classroom.id) ? 'Hide' : 'Show' }}
             {{ pluralise(room.usage.headcount, 'child', 'children') }}
           </button>
+          <p v-else class="mt-3.5 text-xs text-body">Nobody enrolled yet</p>
         </div>
 
         <div
