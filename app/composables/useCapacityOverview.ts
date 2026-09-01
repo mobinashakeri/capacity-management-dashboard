@@ -1,32 +1,24 @@
 import type { CapacityOverviewResponse, IsoMonth, Meta } from '~/types/api'
 import type { AppError, ViewState } from '~/types/errors'
+import { fetchCapacityOverview } from '~/utils/api/capacity'
 import { toAppError } from '~/utils/api/errors'
-import { normaliseMonth } from '~/utils/api/month'
 import { buildDashboardModel } from '~/utils/capacity/summarise'
 
 /**
- * Loads one reporting month and hands back the finished dashboard model.
+ * Loads the selected reporting month and hands back the finished dashboard
+ * model, plus a single view state for the UI to switch on.
  *
- * The selected month lives in the `?month=` query param rather than component
- * state, so a view is shareable by URL and the back button works. It is a query
- * param rather than a route segment because the site is statically generated -
- * a path segment would need a prerendered route per month.
+ * Which month is selected belongs to `useSelectedMonth`, and how the request is
+ * addressed belongs to `utils/api/capacity` - this composable only joins them
+ * to the async state and the derivation.
  */
 export function useCapacityOverview() {
-  const route = useRoute()
-  const router = useRouter()
   const config = useRuntimeConfig()
-
-  /** `null` means "whatever the API considers the current reporting month". */
-  const selectedMonth = computed<IsoMonth | null>(() => normaliseMonth(route.query.month))
+  const { selectedMonth, setMonth } = useSelectedMonth()
 
   const { data, error, status, refresh } = useAsyncData<CapacityOverviewResponse>(
     'capacity-overview',
-    () =>
-      $fetch<CapacityOverviewResponse>('/api/v1/capacity-overview', {
-        baseURL: config.public.apiBase,
-        query: selectedMonth.value ? { month: selectedMonth.value } : undefined,
-      }),
+    () => fetchCapacityOverview($fetch, config.public.apiBase, selectedMonth.value),
     { watch: [selectedMonth] },
   )
 
@@ -72,14 +64,12 @@ export function useCapacityOverview() {
       : 'ready'
   })
 
-  /** Selecting the current reporting month drops the param instead of pinning it. */
+  /**
+   * Choosing the month the API already defaults to drops the parameter rather
+   * than pinning it, so the shared URL keeps following the current month.
+   */
   function selectMonth(month: IsoMonth | null) {
-    const query = { ...route.query }
-
-    if (month === null || month === lastKnownMeta.value?.month) delete query.month
-    else query.month = month
-
-    return router.replace({ query })
+    return setMonth(month === lastKnownMeta.value?.month ? null : month)
   }
 
   return {
