@@ -82,11 +82,15 @@ useHead({
           :aria-busy="viewState === 'refreshing'"
         >
           <!-- What is wrong, then what needs doing, then the numbers behind it. -->
-          <div class="grid items-stretch gap-3 lg:grid-cols-5 lg:gap-4">
-            <div class="lg:col-span-2 [&>*]:h-full">
+          <!--
+            items-start, so opening a group in the attention panel grows only that
+            panel. Stretching the row would make the band beside it jump too.
+          -->
+          <div class="grid items-start gap-3 lg:grid-cols-5 lg:gap-4">
+            <div class="lg:col-span-2">
               <DashboardStatusHeadline :portfolio="model.portfolio" :meta="meta" />
             </div>
-            <div class="lg:col-span-3 [&>*]:h-full">
+            <div class="lg:col-span-3">
               <DashboardAttentionPanel :exceptions="model.exceptions" :labels="model.labels" />
             </div>
           </div>

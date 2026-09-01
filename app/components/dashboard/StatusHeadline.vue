@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Meta } from '~/types/api'
 import type { PortfolioSummary } from '~/types/domain'
-import { formatDate, formatMonth } from '~/utils/capacity/dates'
+import { formatMonth } from '~/utils/capacity/dates'
 import { pluralise } from '~/utils/capacity/format'
 
 const props = defineProps<{ portfolio: PortfolioSummary; meta: Meta | null }>()
@@ -50,7 +50,7 @@ const allClear = computed(
       aria-hidden="true"
     />
 
-    <div class="relative px-5 py-6 sm:px-8 sm:py-8">
+    <div class="relative px-5 py-7 sm:px-8 sm:py-9">
       <p
         class="inline-flex items-center gap-2 rounded-full bg-white/75 px-3 py-1 text-xs font-medium text-brand-ink ring-1 ring-brand/15"
       >
@@ -64,37 +64,6 @@ const allClear = computed(
       >
         {{ summary }}
       </h2>
-
-      <p v-if="meta" class="mt-2.5 text-sm text-body">
-        Places counted as at
-        <span class="num font-medium text-navy">{{ formatDate(meta.effective_on) }}</span>
-        · {{ meta.timezone }}
-      </p>
-
-      <dl class="mt-5 grid max-w-md grid-cols-3 gap-3">
-        <div>
-          <dt class="label">Places free</dt>
-          <dd class="figure text-2xl font-semibold">{{ portfolio.placesAvailable }}</dd>
-        </div>
-        <div>
-          <dt class="label">Rooms over</dt>
-          <dd
-            class="figure text-2xl font-semibold"
-            :class="portfolio.roomsOverCapacity > 0 && 'text-alert-ink'"
-          >
-            {{ portfolio.roomsOverCapacity }}
-          </dd>
-        </div>
-        <div>
-          <dt class="label">No classroom</dt>
-          <dd
-            class="figure text-2xl font-semibold"
-            :class="portfolio.unassignedCount > 0 && 'text-alert-ink'"
-          >
-            {{ portfolio.unassignedCount }}
-          </dd>
-        </div>
-      </dl>
     </div>
   </div>
 </template>
