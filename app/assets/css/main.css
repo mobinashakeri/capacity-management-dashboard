@@ -73,10 +73,17 @@ body {
   letter-spacing: -0.015em;
 }
 
-:where(a, button, select, input, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-brand);
-  outline-offset: 2px;
-  border-radius: 6px;
+/*
+ * In @layer base so a utility can still opt out. Unlayered rules beat every
+ * layered utility whatever their specificity, which silently overrode
+ * `focus:outline-none` on controls that draw their own focus treatment.
+ */
+@layer base {
+  :where(a, button, select, input, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
