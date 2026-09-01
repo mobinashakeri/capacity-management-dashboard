@@ -11,7 +11,7 @@ defineProps<{
   availableMonths: IsoMonth[]
 }>()
 
-const emit = defineEmits<{ retry: []; selectMonth: [month: IsoMonth] }>()
+const emit = defineEmits<{ retry: []; selectMonth: [month: IsoMonth]; reset: [] }>()
 
 /** Months the user can jump to from an error, capped so the list stays scannable. */
 const RECOVERY_LIMIT = 12
@@ -57,8 +57,12 @@ const RECOVERY_LIMIT = 12
       forever, or assuming they mistyped something.
     -->
     <p v-if="error.kind === 'server'" class="mt-1 text-sm text-ink-muted">
-      {{ month ? `${formatMonth(month)} is listed as available, but` : 'The service' }}
-      couldn’t return it. This is a problem at the service, not with your selection.
+      {{
+        month
+          ? `${formatMonth(month)} is listed as available, but the service couldn’t return it.`
+          : 'The service couldn’t return this month.'
+      }}
+      This is a problem at the service, not with your selection.
     </p>
 
     <div class="mt-4 flex flex-wrap gap-2">
@@ -69,6 +73,19 @@ const RECOVERY_LIMIT = 12
       >
         Try again
       </button>
+
+      <!--
+        The month list comes from a successful response, so a bad month in a
+        shared link leaves nothing to offer. Falling back to the current month
+        always works, and without it that link is a dead end.
+      -->
+      <button
+        v-if="month"
+        class="rounded-md border border-line-strong px-3 py-1.5 text-sm font-medium"
+        @click="emit('reset')"
+      >
+        Show current month
+      </button>
     </div>
 
     <div v-if="availableMonths.length" class="mt-5 border-t border-line pt-4">
@@ -76,7 +93,7 @@ const RECOVERY_LIMIT = 12
       <ul class="mt-2 flex flex-wrap gap-2">
         <li v-for="option in availableMonths.slice(0, RECOVERY_LIMIT)" :key="option">
           <button
-            class="rounded-full border border-line px-3 py-1 text-xs hover:bg-page"
+            class="rounded-full border border-line-strong px-3 py-1 text-xs hover:bg-page"
             :class="option === month && 'opacity-50'"
             :disabled="option === month"
             @click="emit('selectMonth', option)"
@@ -99,7 +116,7 @@ const RECOVERY_LIMIT = 12
       <button
         v-for="option in availableMonths.slice(0, RECOVERY_LIMIT)"
         :key="option"
-        class="rounded-full border border-line px-3 py-1 text-xs hover:bg-page"
+        class="rounded-full border border-line-strong px-3 py-1 text-xs hover:bg-page"
         @click="emit('selectMonth', option)"
       >
         {{ formatMonth(option) }}

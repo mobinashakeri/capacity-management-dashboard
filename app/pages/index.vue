@@ -66,6 +66,7 @@ useHead({
         :available-months="availableMonths"
         @retry="refresh()"
         @select-month="selectMonth"
+        @reset="selectMonth(null)"
       >
         <!--
           Data stays on screen while the next month loads, dimmed rather than
