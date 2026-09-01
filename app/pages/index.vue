@@ -82,6 +82,17 @@ useHead({
 
           <DashboardAttentionPanel :exceptions="model.exceptions" :labels="model.labels" />
 
+          <!--
+            Charts sit below the exceptions, not above: they answer "how are we
+            doing", which is the second question. The first is "what do I need
+            to do today", and that is the panel above.
+          -->
+          <section aria-labelledby="charts-heading" class="grid gap-3 lg:grid-cols-2">
+            <h2 id="charts-heading" class="sr-only">Capacity charts</h2>
+            <ChartsCentreUtilizationChart :centres="model.centres" />
+            <ChartsAgeGroupDemandChart :demand="model.ageGroupDemand" />
+          </section>
+
           <section aria-labelledby="centres-heading">
             <h2 id="centres-heading" class="mb-3 text-base font-semibold">Centres</h2>
             <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
